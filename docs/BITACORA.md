@@ -42,3 +42,34 @@ placeholder, canónicas. Pendiente real: dominio, Google Business, Cloudflare
 Email (requieren cuentas).
 
 Verificado: `npm run build` limpio (12 páginas) + revisión visual en navegador.
+
+## 2026-07-11 · Claude (rama transbank: Webpay Plus)
+
+Pago online para productos y reservas sobre la base de `main`:
+
+- **Deps:** `transbank-sdk@6` (CommonJS: se importa el default y se
+  desestructura — los named imports revientan en el server de Vite),
+  `@astrojs/vercel@8` (la v11 exige Astro 7), `@nanostores/persistent`.
+- **`src/lib/transbank.ts`:** Options por ambiente — integración usa las
+  credenciales públicas del SDK; producción exige `TBK_COMMERCE_CODE`,
+  `TBK_API_KEY`, `TBK_ENV=produccion` en Vercel. `generarBuyOrder` con
+  prefijo PR/RS (≤26 chars).
+- **Carrito:** `persistentAtom` en localStorage; islas `CarritoBadge`
+  (header), `BotonAgregarCarrito` (detalle prenda), `CarritoLista`
+  (/carrito). Solo viajan slug+qty; el precio lo recalcula el servidor.
+- **`/api/pago/crear`** (`prerender=false`): valida items contra la content
+  collection (stock, qty 1-10) o servicio×tamaño, crea la transacción y
+  devuelve `{url, token}`.
+- **`/pago/retorno`** (`prerender=false`): commit del token_ws, voucher con
+  orden/monto/tarjeta/autorización, manejo de rechazo, anulación (TBK_TOKEN),
+  error de commit y acceso directo. Si fue compra de productos, limpia el
+  carrito; si fue reserva, CTA a agendar con la orden en las notas.
+- **`/reservar`:** sección opcional "dejar la hora pagada" con Webpay.
+- **Gotcha de dev:** tras instalar deps con `astro dev` corriendo, el
+  prebundle de Vite quedó con DOS grafos de React (hashes `?v=` mezclados) →
+  "Invalid hook call" en todas las islas. Fix: parar el server, borrar
+  `node_modules/.vite`, arrancar de nuevo. Se dejó `dedupe` explícito en
+  astro.config por si acaso.
+- **Probado E2E en integración:** compra completa aprobada (voucher real del
+  simulador) + validaciones de API (reserva OK, stock excedido 409, slug
+  desconocido 400).

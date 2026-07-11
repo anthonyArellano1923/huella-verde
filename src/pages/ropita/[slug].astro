@@ -9,6 +9,7 @@ import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import { formatCLP } from '../../utils/money';
 import { waLinkPrenda } from '../../utils/whatsapp';
+import BotonAgregarCarrito from '../../components/react/BotonAgregarCarrito';
 
 export async function getStaticPaths() {
   const prendas = await getCollection('prendas');
@@ -64,14 +65,21 @@ const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-añ
             </p>
           ) : (
             <>
-              <a class="boton boton--whatsapp" href={waLinkPrenda(nombre, talla, precio)} rel="noopener">
-                Lo quiero — coordinar por WhatsApp
-              </a>
+              <BotonAgregarCarrito
+                client:load
+                slug={prenda.id}
+                nombre={nombre}
+                talla={talla}
+                precio={precio}
+                stock={stock}
+              />
               <p class="nota-pago">
-                Se abre WhatsApp con el pedido listo para enviar. El pago se
-                coordina por transferencia y la entrega puede ser en la
-                peluquería o por encomienda.
+                Pago online con Webpay (Transbank). La entrega se coordina
+                después del pago: retiro en la peluquería o encomienda.
               </p>
+              <a class="enlace-whatsapp" href={waLinkPrenda(nombre, talla, precio)} rel="noopener">
+                ¿Prefieres transferencia? Coordina por WhatsApp →
+              </a>
             </>
           )
         }
@@ -149,6 +157,12 @@ const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-añ
     color: var(--color-texto-suave);
   }
 
+  .enlace-whatsapp {
+    display: inline-block;
+    margin-block-start: var(--espacio-s);
+    font-size: var(--texto-s);
+  }
+
   .aviso-agotada {
     margin-block-start: var(--espacio-m);
     padding: var(--espacio-m);
@@ -160,5 +174,23 @@ const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-añ
   .cuerpo {
     margin-block-start: var(--espacio-l);
     color: var(--color-texto-suave);
+  }
+</style>
+
+<style is:global>
+  /* Estilos de la isla BotonAgregarCarrito */
+  .agregar-carrito {
+    margin-block-start: var(--espacio-m);
+
+    & .boton[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .en-carrito {
+    margin-block-start: var(--espacio-s);
+    font-size: var(--texto-s);
+    font-weight: 600;
   }
 </style>

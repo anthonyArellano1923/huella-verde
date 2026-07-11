@@ -1,0 +1,108 @@
+---
+/** Página del carrito: la lista interactiva es una isla React (client:load). */
+import Base from '../layouts/Base.astro';
+import CarritoLista from '../components/react/CarritoLista';
+---
+
+<Base titulo="Tu carrito" descripcion="Revisa tu pedido y paga online con Webpay.">
+  <div class="contenedor pagina-carrito">
+    <h1>Tu carrito</h1>
+    <CarritoLista client:load />
+    <p class="alternativa">
+      ¿Prefieres pagar por transferencia? También puedes
+      <a href="/ropita/">elegir tus prendas</a> y coordinar por WhatsApp desde
+      la página de cada una.
+    </p>
+  </div>
+</Base>
+
+<style is:global>
+  /* Estilos de la isla CarritoLista (el CSS de las islas vive en la página) */
+  .pagina-carrito {
+    padding-block: var(--espacio-xl);
+    max-width: 42rem;
+
+    & h1 {
+      margin-block-end: var(--espacio-l);
+    }
+  }
+
+  .carrito-vacio {
+    color: var(--color-texto-suave);
+  }
+
+  .carrito__lista {
+    display: grid;
+    gap: var(--espacio-s);
+    margin: 0 0 var(--espacio-m);
+    padding: 0;
+    list-style: none;
+
+    & li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--espacio-s);
+      padding: var(--espacio-m);
+      background: var(--color-superficie);
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-m);
+    }
+
+    & small {
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .carrito__controles {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-s);
+
+    & button {
+      inline-size: 2.2rem;
+      block-size: 2.2rem;
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-s);
+      background: var(--color-fondo);
+      color: var(--color-texto);
+      font-size: 1.1rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-primario-suave);
+      }
+    }
+
+    & strong {
+      min-inline-size: 5.5rem;
+      text-align: right;
+    }
+  }
+
+  .carrito__total {
+    font-size: var(--texto-l);
+    margin-block-end: var(--espacio-m);
+  }
+
+  .carrito__error {
+    padding: var(--espacio-s) var(--espacio-m);
+    border-inline-start: 4px solid var(--color-error);
+    background: var(--color-superficie);
+    border-radius: var(--radio-s);
+    margin-block-end: var(--espacio-m);
+  }
+
+  .carrito__nota {
+    margin-block-start: var(--espacio-s);
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+  }
+
+  .alternativa {
+    margin-block-start: var(--espacio-l);
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+  }
+</style>

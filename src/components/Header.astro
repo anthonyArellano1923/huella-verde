@@ -4,6 +4,7 @@
  * scrolleable (sin menú hamburguesa: menos JS, más directo).
  */
 import { NEGOCIO } from '../data/negocio';
+import CarritoBadge from './react/CarritoBadge';
 
 const enlaces = [
   { href: '/', texto: 'Inicio' },
@@ -37,6 +38,7 @@ const esActual = (href: string) =>
         }
       </ul>
     </nav>
+    <CarritoBadge client:load />
   </div>
 </header>
 
@@ -102,5 +104,30 @@ const esActual = (href: string) =>
       color: var(--color-texto-invertido);
       background: var(--color-primario);
     }
+  }
+</style>
+
+<style is:global>
+  /* Estilos de la isla CarritoBadge */
+  .carrito-badge {
+    position: relative;
+    font-size: 1.3rem;
+    text-decoration: none;
+    padding: 0.2em;
+  }
+
+  .carrito-badge__numero {
+    position: absolute;
+    top: -0.3em;
+    right: -0.5em;
+    min-inline-size: 1.4em;
+    padding-inline: 0.3em;
+    border-radius: var(--radio-pill);
+    background: var(--color-primario);
+    color: var(--color-texto-invertido);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.4;
   }
 </style>

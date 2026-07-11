@@ -76,6 +76,19 @@ const datosCliente = {
       {/* El script rellena esto: "Baño completo, perro pequeño: $12.000, ~45 min" */}
     </p>
 
+    <aside class="pagar-online">
+      <h2>¿Quieres dejar tu hora pagada? <span class="opcional">(opcional)</span></h2>
+      <p>
+        Paga ahora con Webpay y agenda después: al aprobarse el pago recibirás
+        una <strong>orden de compra</strong> para escribir en las notas de tu
+        reserva. También puedes pagar en el local, como siempre.
+      </p>
+      <button class="boton boton--secundario" type="button" id="boton-pagar-reserva">
+        Pagar esta reserva con Webpay
+      </button>
+      <p class="error-pago" id="error-pago-reserva" role="alert" hidden></p>
+    </aside>
+
     <div id="cal-contenedor" class="cal-contenedor">
       <p class="cal-cargando">Cargando la agenda…</p>
     </div>
@@ -146,8 +159,34 @@ const datosCliente = {
     const celda = servicio.porTamano[tamanoId];
     referencia.textContent =
       `${nombreServicio[servicioId]}, perro ${nombreTamano[tamanoId].toLowerCase()}: ` +
-      `${formatCLP(celda.precio)}, ~${celda.duracionMin} min. Se paga en el local.`;
+      `${formatCLP(celda.precio)}, ~${celda.duracionMin} min.`;
   }
+
+  // — Pago online de la reserva (Webpay) —
+  const botonPagar = document.getElementById('boton-pagar-reserva');
+  const errorPago = document.getElementById('error-pago-reserva');
+
+  botonPagar.addEventListener('click', async () => {
+    const { servicioId, tamanoId } = seleccionActual();
+    botonPagar.disabled = true;
+    botonPagar.textContent = 'Conectando con Webpay…';
+    errorPago.hidden = true;
+    try {
+      const res = await fetch('/api/pago/crear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'reserva', servicioId, tamanoId }),
+      });
+      const datos = await res.json();
+      if (!res.ok) throw new Error(datos.error || 'No se pudo iniciar el pago.');
+      window.location.href = `${datos.url}?token_ws=${datos.token}`;
+    } catch (e) {
+      errorPago.textContent = e.message || 'Error inesperado. Intenta de nuevo.';
+      errorPago.hidden = false;
+      botonPagar.disabled = false;
+      botonPagar.textContent = 'Pagar esta reserva con Webpay';
+    }
+  });
 
   // Cada tipo de evento usa su propio namespace de Cal: así cambiar de
   // servicio monta un embed nuevo sin pelearse con el anterior.
@@ -253,6 +292,38 @@ const datosCliente = {
     background: var(--color-acento-suave);
     border-radius: var(--radio-s);
     font-weight: 600;
+  }
+
+  .pagar-online {
+    margin-block-end: var(--espacio-l);
+    padding: var(--espacio-l);
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m);
+
+    & h2 {
+      font-size: var(--texto-l);
+      margin-block-end: var(--espacio-s);
+    }
+
+    & .opcional {
+      font-size: var(--texto-s);
+      font-weight: 400;
+      color: var(--color-texto-suave);
+    }
+
+    & p {
+      margin-block-end: var(--espacio-m);
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .error-pago {
+    margin-block-start: var(--espacio-m);
+    padding: var(--espacio-s) var(--espacio-m);
+    border-inline-start: 4px solid var(--color-error);
+    background: var(--color-fondo);
+    border-radius: var(--radio-s);
   }
 
   .cal-contenedor {
