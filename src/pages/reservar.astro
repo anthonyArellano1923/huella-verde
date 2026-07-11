@@ -23,7 +23,7 @@ const datosCliente = {
   servicios: SERVICIOS.map((s) => ({
     id: s.id,
     slug: s.calcomSlug,
-    precioPorTamano: s.precioPorTamano,
+    precioDesdePorTamano: s.precioDesdePorTamano,
   })),
 };
 ---
@@ -41,8 +41,9 @@ const datosCliente = {
         el mismo correo.
       </p>
       <ul class="politicas">
-        <li>Las reservas se hacen con al menos <strong>{POLITICAS_RESERVA.anticipacionMinimaHoras} horas de anticipación</strong>.</li>
+        <li>Las reservas se hacen con al menos <strong>{POLITICAS_RESERVA.anticipacionMinimaHoras} horas de anticipación</strong>, y puedes cancelar hasta <strong>{POLITICAS_RESERVA.cancelacionHoras} horas antes</strong>.</li>
         <li>Cada servicio toma entre 1½ y 2 horas; la última hora del día es a las <strong>{POLITICAS_RESERVA.ultimaHoraInicio}</strong>.</li>
+        <li>{POLITICAS_RESERVA.notaPrecios}</li>
         <li>{POLITICAS_RESERVA.notaHorarioEspecial}</li>
       </ul>
     </header>
@@ -87,7 +88,9 @@ const datosCliente = {
       <p>
         Paga ahora con Webpay y agenda después: al aprobarse el pago recibirás
         una <strong>orden de compra</strong> para escribir en las notas de tu
-        reserva. También puedes pagar en el local, como siempre.
+        reserva. Se paga el <strong>precio base ("desde")</strong>; si tu
+        perrito requiere trabajo extra por su raza, la diferencia se paga en
+        el local. También puedes pagar todo en el local, como siempre.
       </p>
       <button class="boton boton--secundario" type="button" id="boton-pagar-reserva">
         Pagar esta reserva con Webpay
@@ -162,15 +165,29 @@ const datosCliente = {
 
   function actualizarReferencia() {
     const { servicio, servicioId, tamanoId } = seleccionActual();
-    const precio = servicio.precioPorTamano[tamanoId];
+    const precios = servicio.precioDesdePorTamano;
+    const textoPrecio = precios
+      ? `desde ${formatCLP(precios[tamanoId])} (según la raza)`
+      : 'precio a consultar por WhatsApp';
     referencia.textContent =
       `${nombreServicio[servicioId]}, perro ${nombreTamano[tamanoId].toLowerCase()}: ` +
-      `${formatCLP(precio)}, entre 1½ y 2 horas. Paga en el local u online, como prefieras.`;
+      `${textoPrecio}, entre 1½ y 2 horas. Paga en el local u online, como prefieras.`;
   }
 
   // — Pago online de la reserva (Webpay) —
   const botonPagar = document.getElementById('boton-pagar-reserva');
   const errorPago = document.getElementById('error-pago-reserva');
+
+  // Stripping/deslanado no tienen precio base: se cotizan por WhatsApp,
+  // así que no se pueden dejar pagados online.
+  function actualizarBotonPagar() {
+    const { servicio } = seleccionActual();
+    const sinPrecio = !servicio.precioDesdePorTamano;
+    botonPagar.disabled = sinPrecio;
+    botonPagar.textContent = sinPrecio
+      ? 'Este servicio se cotiza por WhatsApp'
+      : 'Pagar esta reserva con Webpay';
+  }
 
   botonPagar.addEventListener('click', async () => {
     const { servicioId, tamanoId } = seleccionActual();
@@ -220,10 +237,12 @@ const datosCliente = {
 
   form.addEventListener('change', (e) => {
     actualizarReferencia();
+    actualizarBotonPagar();
     if (e.target.name === 'servicio') montarCalendario();
   });
 
   actualizarReferencia();
+  actualizarBotonPagar();
   montarCalendario();
 </script>
 

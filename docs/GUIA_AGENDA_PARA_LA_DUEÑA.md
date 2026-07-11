@@ -7,11 +7,14 @@
 > - Toda reserva con **24 horas de anticipación** mínimo.
 > - Horarios fuera de agenda = "horario especial", se conversan por WhatsApp.
 > - Al reservar se pide: nombre y teléfono de la persona, **nombre de la
->   mascota, raza, tamaño y una fotito del perrito**.
+>   mascota, raza y tamaño**; la fotito del perrito es **opcional**.
 > - Los servicios express (orejas, glándulas, uñas, ~5 min) NO se reservan:
->   se atienden al tiro en el local y se cotizan ahí.
-> - Falta definir: **precios de los servicios completos** y política de
->   cancelación.
+>   se atienden al tiro en el local y se cotizan ahí. Todos vienen incluidos
+>   en el baño completo.
+> - **Precios "desde"** (el final se conversa según la raza): baño completo
+>   $22.000 / $28.000 / $32.000 (pequeño/mediano/grande); mantención + corte
+>   $25.000 / $30.000 / $40.000. Stripping y deslanado: a consultar.
+> - **Cancelación: hasta 3 horas antes** de la hora reservada.
 
 > Escrita en simple, sin palabras técnicas. Esta guía explica cómo funciona
 > la agenda de la web y qué tienes que hacer tú (casi nada, esa es la gracia).
@@ -52,9 +55,12 @@ persona (toma 10 segundos desde el teléfono).
 
 - [ ] 📌 Crear tu cuenta gratis en cal.com con tu correo de Google
 - [ ] 📌 Conectarla con tu Google Calendar (2 clics)
-- [ ] 📌 Crear un "tipo de evento" por servicio, todos de **2 horas** (baño,
-      baño y corte, stripping, deslanado), con preguntas del formulario:
-      nombre de la mascota, raza, tamaño y foto
+- [ ] 📌 Crear un "tipo de evento" por servicio, todos de **2 horas** (baño
+      completo, mantención + corte, stripping, deslanado), con preguntas del
+      formulario: nombre de la mascota, raza, tamaño, y foto opcional (si el
+      plan de Cal.com no permite subir archivos, la foto se manda por
+      WhatsApp después de reservar)
+- [ ] 📌 Configurar cancelación permitida hasta 3 horas antes
 - [ ] 📌 Poner el horario real: L-V 10:30–19:30, sábado 10:30–16:00, con
       última hora de inicio 17:30 y anticipación mínima de 24 horas
 - [ ] 📌 Probar una reserva de mentira y verla llegar a tu teléfono

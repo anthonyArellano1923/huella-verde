@@ -22,7 +22,6 @@ export const NEGOCIO = {
 
   direccion: {
     calle: 'Curicó 243',
-    // TODO(Anthony): confirmar comuna/ciudad exacta del local.
     comuna: 'Santiago',
     ciudad: 'Santiago',
     region: 'Región Metropolitana',

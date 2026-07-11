@@ -1,5 +1,5 @@
-import { g as getCollection } from '../../../chunks/_astro_content_BkP7P4tn.mjs';
-import { g as getServicio, a as getTamano } from '../../../chunks/servicios_ClQ-6w0s.mjs';
+import { g as getCollection } from '../../../chunks/_astro_content_CUCq9TDn.mjs';
+import { g as getServicio, a as getTamano } from '../../../chunks/servicios_ZJ9ChDSN.mjs';
 import { g as generarBuyOrder, w as webpayTransaction } from '../../../chunks/transbank_7U-WXAui.mjs';
 export { renderers } from '../../../renderers.mjs';
 
@@ -36,7 +36,10 @@ const POST = async ({ request, url }) => {
     const servicio = getServicio(String(cuerpo.servicioId));
     const tamano = getTamano(String(cuerpo.tamanoId));
     if (!servicio || !tamano) return json({ error: "Servicio o tamaño desconocido." }, 400);
-    monto = servicio.precioPorTamano[tamano.id];
+    if (!servicio.precioDesdePorTamano) {
+      return json({ error: `"${servicio.nombre}" se cotiza por WhatsApp; no tiene pago online.` }, 400);
+    }
+    monto = servicio.precioDesdePorTamano[tamano.id];
   } else {
     return json({ error: 'tipo debe ser "productos" o "reserva".' }, 400);
   }

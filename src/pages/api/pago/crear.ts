@@ -61,7 +61,12 @@ export const POST: APIRoute = async ({ request, url }) => {
     const servicio = getServicio(String(cuerpo.servicioId));
     const tamano = getTamano(String(cuerpo.tamanoId));
     if (!servicio || !tamano) return json({ error: 'Servicio o tamaño desconocido.' }, 400);
-    monto = servicio.precioPorTamano[tamano.id];
+    if (!servicio.precioDesdePorTamano) {
+      return json({ error: `"${servicio.nombre}" se cotiza por WhatsApp; no tiene pago online.` }, 400);
+    }
+    // Se cobra el precio base "desde"; la diferencia por complejidad de
+    // raza (si aplica) se paga en el local.
+    monto = servicio.precioDesdePorTamano[tamano.id];
   } else {
     return json({ error: 'tipo debe ser "productos" o "reserva".' }, 400);
   }
