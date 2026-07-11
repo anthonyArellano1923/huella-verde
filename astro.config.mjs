@@ -8,7 +8,7 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   // TODO(Anthony): cambiar por el dominio real comprado en nic.cl (Fase 6).
   // `site` alimenta el sitemap y las URLs canónicas.
-  site: 'https://www.marthamella.cl',
+  site: 'https://www.huellaverde.cl',
   integrations: [react(), sitemap()],
   // Rama transbank: la web sigue siendo estática, pero el adapter permite
   // que las rutas marcadas con `prerender = false` (crear/confirmar pago)

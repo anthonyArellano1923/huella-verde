@@ -43,6 +43,7 @@ Email (requieren cuentas).
 
 Verificado: `npm run build` limpio (12 páginas) + revisión visual en navegador.
 
+<<<<<<< HEAD
 ## 2026-07-11 · Claude (rama transbank: Webpay Plus)
 
 Pago online para productos y reservas sobre la base de `main`:
@@ -73,3 +74,28 @@ Pago online para productos y reservas sobre la base de `main`:
 - **Probado E2E en integración:** compra completa aprobada (voucher real del
   simulador) + validaciones de API (reserva OK, stock excedido 409, slug
   desconocido 400).
+=======
+## 2026-07-11 · Claude (Fase 0 real: marca Huella Verde + datos de Martha)
+
+Datos obtenidos de la llamada con Martha (2 audios transcritos localmente con
+Whisper/mlx en el Mac de Anthony) + mensaje de Anthony:
+
+- **Marca:** Huella Verde (compartida con el negocio de plantas de Martha,
+  que es un negocio SEPARADO — solo comparten marca y local; esta web cubre
+  solo mascotas). Dueña: Martha Mella. Dirección: Curicó 243 (comuna por
+  confirmar). WhatsApp +56 9 5441 7939. Correo Gmail registrado en negocio.ts.
+- **Horario real:** L-V 10:30–19:30 corrido sin colación; sábado estimado
+  10:30–16:00; domingo cerrado.
+- **Servicios:** todos los completos duran 1,5–2 h independiente del tamaño →
+  `DURACION_SERVICIO_MIN = 120` y bloques de 2 h en Cal.com. Nuevos servicios
+  express (~5 min, sin reserva, precio en el local): orejas, glándulas, uñas.
+  El modelo `porTamano {precio, duracion}` se simplificó a `precioPorTamano`.
+- **Políticas de reserva:** 24 h de anticipación mínima; última hora 17:30;
+  "horario especial" conversable por WhatsApp; sin límite hacia adelante.
+  Datos del formulario: nombre, teléfono, nombre mascota, raza, tamaño, foto.
+- **PENDIENTE:** precios reales (no se definieron en la llamada — los de la
+  web siguen siendo ejemplo) y política de cancelación.
+- **Rebranding:** paleta verde hoja (H≈155) sobre blancos frescos con tinte
+  menta + acento floral rosado. Feedback de Anthony: nada de beige/crema.
+  Favicon y OG actualizados a Huella Verde.
+>>>>>>> main

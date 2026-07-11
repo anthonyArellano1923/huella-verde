@@ -61,7 +61,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     const servicio = getServicio(String(cuerpo.servicioId));
     const tamano = getTamano(String(cuerpo.tamanoId));
     if (!servicio || !tamano) return json({ error: 'Servicio o tamaño desconocido.' }, 400);
-    monto = servicio.porTamano[tamano.id].precio;
+    monto = servicio.precioPorTamano[tamano.id];
   } else {
     return json({ error: 'tipo debe ser "productos" o "reserva".' }, 400);
   }

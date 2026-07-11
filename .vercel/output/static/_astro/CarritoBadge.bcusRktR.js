@@ -1,0 +1,1 @@
+import{u as s,j as a,$ as o}from"./carrito.CPg68lm7.js";import"./index.DBy5LfQW.js";function d(){const r=s(o).reduce((t,e)=>t+e.qty,0);return a.jsxs("a",{className:"carrito-badge",href:"/carrito/","aria-label":`Carrito, ${r} productos`,children:["🛒",r>0&&a.jsx("span",{className:"carrito-badge__numero",children:r})]})}export{d as default};

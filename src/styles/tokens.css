@@ -1,29 +1,30 @@
 /*
- * Design tokens — sistema de diseño de Martha Mella.
+ * Design tokens — sistema de diseño de Huella Verde 🐾
  *
  * Paleta en oklch(): L (luminosidad 0-1), C (croma), H (tono en grados).
  * Ventaja sobre hex/hsl: cambiar solo L mantiene el mismo color percibido,
  * ideal para generar variantes claras/oscuras coherentes.
  *
- * Tono base 45° ≈ terracota cálido (perruno y artesanal), acento 150° ≈ verde
- * salvia. Dark mode automático por preferencia del sistema.
+ * Identidad: verde hoja de la marca (H≈155) sobre fondos blancos frescos con
+ * un tinte menta apenas perceptible (nada de beige), y un acento floral
+ * rosado (H≈15) tomado de las flores de los diseños de Martha.
  */
 
 :root {
   /* — Marca — */
-  --color-primario: oklch(0.62 0.13 45);        /* terracota */
-  --color-primario-fuerte: oklch(0.52 0.14 45); /* hover / activo */
-  --color-primario-suave: oklch(0.94 0.03 45);  /* fondos de tarjetas destacadas */
-  --color-acento: oklch(0.56 0.09 150);         /* verde salvia */
-  --color-acento-suave: oklch(0.93 0.03 150);
+  --color-primario: oklch(0.5 0.11 155);          /* verde hoja */
+  --color-primario-fuerte: oklch(0.4 0.11 155);   /* hover / activo */
+  --color-primario-suave: oklch(0.95 0.03 155);   /* fondos de tarjetas destacadas */
+  --color-acento: oklch(0.62 0.13 15);            /* floral rosado */
+  --color-acento-suave: oklch(0.955 0.02 15);
 
-  /* — Neutros cálidos — */
-  --color-fondo: oklch(0.98 0.008 60);
+  /* — Neutros frescos — */
+  --color-fondo: oklch(0.985 0.006 165);
   --color-superficie: oklch(1 0 0);
-  --color-borde: oklch(0.88 0.015 60);
-  --color-texto: oklch(0.28 0.02 45);
-  --color-texto-suave: oklch(0.47 0.02 45);
-  --color-texto-invertido: oklch(0.99 0.005 60);
+  --color-borde: oklch(0.9 0.012 165);
+  --color-texto: oklch(0.27 0.03 165);
+  --color-texto-suave: oklch(0.46 0.025 165);
+  --color-texto-invertido: oklch(0.99 0.004 165);
 
   /* — Estados — */
   --color-exito: oklch(0.55 0.12 150);
@@ -51,24 +52,24 @@
   --radio-s: 0.5rem;
   --radio-m: 0.875rem;
   --radio-pill: 999px;
-  --sombra-tarjeta: 0 1px 3px oklch(0.3 0.02 45 / 0.08), 0 4px 14px oklch(0.3 0.02 45 / 0.06);
+  --sombra-tarjeta: 0 1px 3px oklch(0.35 0.05 165 / 0.08), 0 4px 14px oklch(0.35 0.05 165 / 0.06);
   --ancho-contenido: 68rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primario: oklch(0.72 0.12 45);
-    --color-primario-fuerte: oklch(0.8 0.12 45);
-    --color-primario-suave: oklch(0.28 0.04 45);
-    --color-acento: oklch(0.72 0.09 150);
-    --color-acento-suave: oklch(0.3 0.04 150);
+    --color-primario: oklch(0.72 0.1 155);
+    --color-primario-fuerte: oklch(0.8 0.1 155);
+    --color-primario-suave: oklch(0.3 0.05 155);
+    --color-acento: oklch(0.74 0.1 15);
+    --color-acento-suave: oklch(0.31 0.04 15);
 
-    --color-fondo: oklch(0.21 0.015 45);
-    --color-superficie: oklch(0.26 0.018 45);
-    --color-borde: oklch(0.36 0.02 45);
-    --color-texto: oklch(0.93 0.01 60);
-    --color-texto-suave: oklch(0.72 0.015 60);
-    --color-texto-invertido: oklch(0.2 0.02 45);
+    --color-fondo: oklch(0.21 0.02 165);
+    --color-superficie: oklch(0.26 0.022 165);
+    --color-borde: oklch(0.36 0.025 165);
+    --color-texto: oklch(0.93 0.012 165);
+    --color-texto-suave: oklch(0.72 0.018 165);
+    --color-texto-invertido: oklch(0.19 0.025 165);
 
     --sombra-tarjeta: 0 1px 3px oklch(0 0 0 / 0.3), 0 4px 14px oklch(0 0 0 / 0.25);
   }

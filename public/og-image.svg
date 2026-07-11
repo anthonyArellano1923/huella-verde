@@ -1,14 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
-  <!-- TODO(Anthony): reemplazar por una imagen OG real (1200x630 JPG/PNG) con foto de la peluquería -->
-  <rect width="1200" height="630" fill="#c06b3e"/>
-  <rect x="30" y="30" width="1140" height="570" rx="24" fill="none" stroke="#ffffff44" stroke-width="4"/>
-  <g fill="#fff7ef">
+  <!-- TODO(Anthony): reemplazar por una imagen OG real (1200x630 JPG/PNG) con foto del local -->
+  <rect width="1200" height="630" fill="#2f6b40"/>
+  <rect x="30" y="30" width="1140" height="570" rx="24" fill="none" stroke="#ffffff33" stroke-width="4"/>
+  <g fill="#ffffff">
     <ellipse cx="240" cy="340" rx="70" ry="56"/>
     <ellipse cx="160" cy="258" rx="32" ry="44" transform="rotate(-15 160 258)"/>
     <ellipse cx="240" cy="234" rx="32" ry="44"/>
     <ellipse cx="320" cy="258" rx="32" ry="44" transform="rotate(15 320 258)"/>
   </g>
-  <text x="430" y="310" font-family="system-ui, sans-serif" font-size="76" font-weight="800" fill="#fff7ef">Martha Mella</text>
-  <text x="432" y="380" font-family="system-ui, sans-serif" font-size="38" fill="#ffe8d6">Peluquería canina con cariño</text>
-  <text x="432" y="450" font-family="system-ui, sans-serif" font-size="30" fill="#ffd9bd">Reservas online · Ropita tejida a mano</text>
+  <path d="M330 400 Q380 360 375 300 Q320 315 312 365 Q309 388 330 400Z" fill="#9fd4ae"/>
+  <text x="430" y="300" font-family="Georgia, 'Times New Roman', serif" font-size="82" font-weight="700" fill="#ffffff">Huella Verde</text>
+  <text x="432" y="370" font-family="system-ui, sans-serif" font-size="36" fill="#d9f0e0">Peluquería canina</text>
+  <text x="432" y="440" font-family="system-ui, sans-serif" font-size="28" fill="#b7dfc3">Reservas online · Ropita tejida a mano</text>
 </svg>

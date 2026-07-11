@@ -1,50 +1,55 @@
 /**
  * Datos del negocio — ÚNICA fuente de verdad.
  *
- * TODO(Anthony): reemplazar los valores marcados cuando tengas los datos
- * reales de tu hermana (Fase 0 del PLAN.md). Nada más en el código repite
+ * Datos reales entregados por Martha (2026-07-11). Los campos que aún son
+ * placeholder están marcados con TODO(Anthony). Nada más en el código repite
  * estos datos: editar aquí actualiza toda la web.
  */
 
 export const NEGOCIO = {
-  nombre: 'Martha Mella',
-  slogan: 'Peluquería canina con cariño',
+  nombre: 'Huella Verde',
+  /** Nombre de la dueña, usado en textos ("tejido a mano por Martha"). */
+  duena: 'Martha Mella',
+  /**
+   * Slogan de la MARCA (compartida con el negocio de plantas de Martha).
+   * Esta web cubre solo el lado mascotas: peluquería, reservas y ropita.
+   */
+  slogan: 'Con amor por las mascotas',
   descripcion:
-    'Peluquería canina en Santiago: baño, corte y stripping para tu perrito, con reserva de hora online. Además, ropita tejida a mano para el invierno.',
+    'Huella Verde, peluquería canina: baño, corte, stripping y deslanado con reserva de hora online, y ropita de invierno tejida a mano.',
 
-  // TODO(Anthony): número real de WhatsApp Business (9 dígitos, sin +56).
-  whatsapp: '912345678',
+  whatsapp: '954417939',
 
-  // TODO(Anthony): dirección real del local.
   direccion: {
-    calle: 'Av. Ejemplo 1234',
-    comuna: 'Ñuñoa',
+    calle: 'Curicó 243',
+    // TODO(Anthony): confirmar comuna/ciudad exacta del local.
+    comuna: 'Santiago',
     ciudad: 'Santiago',
     region: 'Región Metropolitana',
   },
 
-  // TODO(Anthony): horario real (esto alimenta la página de contacto y el
-  // Schema.org de Google; el horario de la agenda vive en Cal.com aparte).
+  // Horario real definido con Martha (llamada 2026-07-11): corrido, sin
+  // colación. El sábado es estimado ("ideal"); horarios fuera de agenda se
+  // conversan por WhatsApp como "horario especial".
   horarios: [
-    { dias: 'Martes a Viernes', horas: '10:00 – 18:30' },
-    { dias: 'Sábado', horas: '10:00 – 14:00' },
-    { dias: 'Domingo y Lunes', horas: 'Cerrado' },
+    { dias: 'Lunes a Viernes', horas: '10:30 – 19:30' },
+    { dias: 'Sábado', horas: '10:30 – 16:00' },
+    { dias: 'Domingo', horas: 'Cerrado' },
   ],
 
   /** Horario en formato Schema.org (https://schema.org/openingHours). */
-  horariosSchema: ['Tu-Fr 10:00-18:30', 'Sa 10:00-14:00'],
+  horariosSchema: ['Mo-Fr 10:30-19:30', 'Sa 10:30-16:00'],
 
-  // TODO(Anthony): correo real cuando exista (Fase 6: Cloudflare Email Routing).
-  email: 'contacto@marthamella.cl',
+  email: 'marthastcamstil3852@gmail.com',
 
   // TODO(Anthony): dominio real comprado en nic.cl (Fase 0/6).
-  url: 'https://www.marthamella.cl',
+  url: 'https://www.huellaverde.cl',
 
   /**
    * Usuario de Cal.com de la dueña. TODO(Anthony): crear la cuenta en la
    * Fase 2 y poner aquí el username real (cal.com/<username>).
    */
-  calcomUsuario: 'martha-mella',
+  calcomUsuario: 'huella-verde',
 } as const;
 
 /** Número en formato E.164 sin '+', listo para enlaces wa.me. */
