@@ -1,5 +1,18 @@
 # Guía de la agenda online — para Martha 💇‍♀️🐩
 
+> **Definido contigo el 2026-07-11 (llamada con Anthony):**
+> - Horario: lunes a viernes 10:30–19:30 corrido; sábado estimado 10:30–16:00.
+> - Todos los servicios completos duran entre 1½ y 2 horas → bloques de 2 h.
+> - Última hora del día: 17:30 (así el último perrito sale a las 19:30).
+> - Toda reserva con **24 horas de anticipación** mínimo.
+> - Horarios fuera de agenda = "horario especial", se conversan por WhatsApp.
+> - Al reservar se pide: nombre y teléfono de la persona, **nombre de la
+>   mascota, raza, tamaño y una fotito del perrito**.
+> - Los servicios express (orejas, glándulas, uñas, ~5 min) NO se reservan:
+>   se atienden al tiro en el local y se cotizan ahí.
+> - Falta definir: **precios de los servicios completos** y política de
+>   cancelación.
+
 > Escrita en simple, sin palabras técnicas. Esta guía explica cómo funciona
 > la agenda de la web y qué tienes que hacer tú (casi nada, esa es la gracia).
 >
@@ -39,10 +52,10 @@ persona (toma 10 segundos desde el teléfono).
 
 - [ ] 📌 Crear tu cuenta gratis en cal.com con tu correo de Google
 - [ ] 📌 Conectarla con tu Google Calendar (2 clics)
-- [ ] 📌 Crear un "tipo de evento" por servicio con su duración:
-      baño (45-75 min), baño y corte (75-120 min), stripping (90-150 min),
-      deslanado (60-120 min) — la duración exacta la definimos según el
-      tamaño de perro más común que atiendes
-- [ ] 📌 Poner tu horario real de atención (y la hora de colación)
+- [ ] 📌 Crear un "tipo de evento" por servicio, todos de **2 horas** (baño,
+      baño y corte, stripping, deslanado), con preguntas del formulario:
+      nombre de la mascota, raza, tamaño y foto
+- [ ] 📌 Poner el horario real: L-V 10:30–19:30, sábado 10:30–16:00, con
+      última hora de inicio 17:30 y anticipación mínima de 24 horas
 - [ ] 📌 Probar una reserva de mentira y verla llegar a tu teléfono
 - [ ] Anthony: poner el usuario real en la web (`negocio.ts` → `calcomUsuario`)

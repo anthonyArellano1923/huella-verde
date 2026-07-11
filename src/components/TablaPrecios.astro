@@ -2,16 +2,17 @@
 /**
  * Tabla de precios servicio × tamaño. Se alimenta 100% de src/data/servicios.ts:
  * cambiar un precio allá actualiza esta tabla, la página de reservas y el
- * checkout de la rama transbank.
+ * checkout de la rama transbank. La duración no va por celda porque Martha
+ * definió un bloque único (1,5–2 h) para todos los servicios.
  */
-import { SERVICIOS, TAMANOS } from '../data/servicios';
+import { SERVICIOS, TAMANOS, SERVICIOS_EXPRESS } from '../data/servicios';
 import { formatCLP } from '../utils/money';
 ---
 
 <div class="envoltorio" tabindex="0" role="region" aria-label="Tabla de precios por servicio y tamaño de perro">
   <table>
     <caption class="visualmente-oculto">
-      Precios y duración de cada servicio según el tamaño del perro
+      Precios de cada servicio según el tamaño del perro
     </caption>
     <thead>
       <tr>
@@ -24,21 +25,30 @@ import { formatCLP } from '../utils/money';
         SERVICIOS.map((s) => (
           <tr>
             <th scope="row">{s.nombre}</th>
-            {TAMANOS.map((t) => {
-              const celda = s.porTamano[t.id];
-              return (
-                <td>
-                  <strong>{formatCLP(celda.precio)}</strong>
-                  <span class="duracion">~{celda.duracionMin} min</span>
-                </td>
-              );
-            })}
+            {TAMANOS.map((t) => (
+              <td>
+                <strong>{formatCLP(s.precioPorTamano[t.id])}</strong>
+              </td>
+            ))}
           </tr>
         ))
       }
     </tbody>
   </table>
 </div>
+
+<p class="nota-duracion">
+  Cada servicio toma entre <strong>1½ y 2 horas</strong> — tu perrito se
+  atiende con calma, sin apuros.
+</p>
+
+<section class="express" aria-labelledby="titulo-express">
+  <h3 id="titulo-express">Servicios express (~5 min)</h3>
+  <p>Se hacen al momento en el local, sin reserva. El valor se cotiza ahí mismo.</p>
+  <ul>
+    {SERVICIOS_EXPRESS.map((e) => <li>{e.nombre}</li>)}
+  </ul>
+</section>
 
 <style>
   /* La tabla scrollea horizontal en pantallas chicas, la página nunca */
@@ -51,7 +61,7 @@ import { formatCLP } from '../utils/money';
 
   table {
     width: 100%;
-    min-width: 34rem;
+    min-width: 30rem;
     border-collapse: collapse;
     font-size: var(--texto-s);
   }
@@ -76,11 +86,33 @@ import { formatCLP } from '../utils/money';
     font-weight: 600;
   }
 
-  td strong {
-    display: block;
+  .nota-duracion {
+    margin-block-start: var(--espacio-s);
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
   }
 
-  .duracion {
-    color: var(--color-texto-suave);
+  .express {
+    margin-block-start: var(--espacio-l);
+    padding: var(--espacio-l);
+    background: var(--color-acento-suave);
+    border-radius: var(--radio-m);
+
+    & h3 {
+      font-size: var(--texto-base);
+      margin-block-end: var(--espacio-xs);
+    }
+
+    & p {
+      font-size: var(--texto-s);
+      color: var(--color-texto-suave);
+      margin-block-end: var(--espacio-s);
+    }
+
+    & ul {
+      margin: 0;
+      padding-inline-start: 1.2em;
+      font-size: var(--texto-s);
+    }
   }
 </style>

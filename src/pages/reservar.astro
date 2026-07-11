@@ -12,17 +12,18 @@
  */
 import Base from '../layouts/Base.astro';
 import { NEGOCIO } from '../data/negocio';
-import { SERVICIOS, TAMANOS } from '../data/servicios';
+import { SERVICIOS, TAMANOS, DURACION_SERVICIO_MIN, POLITICAS_RESERVA } from '../data/servicios';
 import { formatCLP } from '../utils/money';
 import { waLinkReserva } from '../utils/whatsapp';
 
 // Datos que necesita el script del cliente, serializados una sola vez.
 const datosCliente = {
   usuario: NEGOCIO.calcomUsuario,
+  duracionMin: DURACION_SERVICIO_MIN,
   servicios: SERVICIOS.map((s) => ({
     id: s.id,
     slug: s.calcomSlug,
-    porTamano: s.porTamano,
+    precioPorTamano: s.precioPorTamano,
   })),
 };
 ---
@@ -39,6 +40,11 @@ const datosCliente = {
         la confirmación por correo y puedes cancelar o cambiar la hora desde
         el mismo correo.
       </p>
+      <ul class="politicas">
+        <li>Las reservas se hacen con al menos <strong>{POLITICAS_RESERVA.anticipacionMinimaHoras} horas de anticipación</strong>.</li>
+        <li>Cada servicio toma entre 1½ y 2 horas; la última hora del día es a las <strong>{POLITICAS_RESERVA.ultimaHoraInicio}</strong>.</li>
+        <li>{POLITICAS_RESERVA.notaHorarioEspecial}</li>
+      </ul>
     </header>
 
     <form class="selector" aria-label="Elige servicio y tamaño de tu perro">
@@ -143,10 +149,10 @@ const datosCliente = {
 
   function actualizarReferencia() {
     const { servicio, servicioId, tamanoId } = seleccionActual();
-    const celda = servicio.porTamano[tamanoId];
+    const precio = servicio.precioPorTamano[tamanoId];
     referencia.textContent =
       `${nombreServicio[servicioId]}, perro ${nombreTamano[tamanoId].toLowerCase()}: ` +
-      `${formatCLP(celda.precio)}, ~${celda.duracionMin} min. Se paga en el local.`;
+      `${formatCLP(precio)}, entre 1½ y 2 horas. Se paga en el local.`;
   }
 
   // Cada tipo de evento usa su propio namespace de Cal: así cambiar de
@@ -191,6 +197,15 @@ const datosCliente = {
       margin-block-start: var(--espacio-m);
       color: var(--color-texto-suave);
     }
+  }
+
+  .politicas {
+    margin-block-start: var(--espacio-m);
+    padding-inline-start: 1.2em;
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+    display: grid;
+    gap: var(--espacio-xs);
   }
 
   .selector {

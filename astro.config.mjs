@@ -7,6 +7,6 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   // TODO(Anthony): cambiar por el dominio real comprado en nic.cl (Fase 6).
   // `site` alimenta el sitemap y las URLs canónicas.
-  site: 'https://www.marthamella.cl',
+  site: 'https://www.huellaverde.cl',
   integrations: [react(), sitemap()],
 });
