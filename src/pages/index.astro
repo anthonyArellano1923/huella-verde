@@ -35,7 +35,11 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
             <h3>{s.nombre}</h3>
             <p>{s.descripcion}</p>
             <p class="desde">
-              Desde <strong>{formatCLP(s.precioPorTamano.pequeno)}</strong>
+              {s.precioDesdePorTamano ? (
+                <>Desde <strong>{formatCLP(s.precioDesdePorTamano.pequeno)}</strong></>
+              ) : (
+                <>Precio a consultar</>
+              )}
             </p>
           </li>
         ))

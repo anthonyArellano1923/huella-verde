@@ -5,7 +5,7 @@
  * checkout de la rama transbank. La duración no va por celda porque Martha
  * definió un bloque único (1,5–2 h) para todos los servicios.
  */
-import { SERVICIOS, TAMANOS, SERVICIOS_EXPRESS } from '../data/servicios';
+import { SERVICIOS, TAMANOS, SERVICIOS_EXPRESS, POLITICAS_RESERVA } from '../data/servicios';
 import { formatCLP } from '../utils/money';
 ---
 
@@ -27,7 +27,14 @@ import { formatCLP } from '../utils/money';
             <th scope="row">{s.nombre}</th>
             {TAMANOS.map((t) => (
               <td>
-                <strong>{formatCLP(s.precioPorTamano[t.id])}</strong>
+                {s.precioDesdePorTamano ? (
+                  <>
+                    <span class="desde">desde </span>
+                    <strong>{formatCLP(s.precioDesdePorTamano[t.id])}</strong>
+                  </>
+                ) : (
+                  <span class="consultar">A consultar</span>
+                )}
               </td>
             ))}
           </tr>
@@ -39,7 +46,7 @@ import { formatCLP } from '../utils/money';
 
 <p class="nota-duracion">
   Cada servicio toma entre <strong>1½ y 2 horas</strong> — tu perrito se
-  atiende con calma, sin apuros.
+  atiende con calma, sin apuros. {POLITICAS_RESERVA.notaPrecios}
 </p>
 
 <section class="express" aria-labelledby="titulo-express">
@@ -90,6 +97,21 @@ import { formatCLP } from '../utils/money';
     margin-block-start: var(--espacio-s);
     font-size: var(--texto-s);
     color: var(--color-texto-suave);
+  }
+
+  .desde {
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+  }
+
+  td strong {
+    display: block;
+  }
+
+  .consultar {
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+    font-style: italic;
   }
 
   .express {
