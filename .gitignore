@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # salida de build del adapter de Vercel (ramas transbank/mercadopago)
 .vercel/
+# Documentos de planificación 
+
+docs/
