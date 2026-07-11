@@ -66,3 +66,17 @@ Whisper/mlx en el Mac de Anthony) + mensaje de Anthony:
 - **Rebranding:** paleta verde hoja (H≈155) sobre blancos frescos con tinte
   menta + acento floral rosado. Feedback de Anthony: nada de beige/crema.
   Favicon y OG actualizados a Huella Verde.
+
+## 2026-07-11 · Claude (Fase 5 verificada: Lighthouse 100 y fixes de QA)
+
+Auditoría Lighthouse móvil sobre el build de producción, las 6 páginas:
+**100/100/100 (perf/a11y/SEO)** tras corregir 3 hallazgos reales:
+1. Overflow horizontal en móvil: el `<nav>` como ítem flex no podía
+   encogerse (`min-width:auto`) y empujaba el body a 459px; fix
+   `min-inline-size: 0` para que el scroll quede dentro de la lista.
+2. Contraste AA: chip de talla (rosado 3.36:1 → token `--color-acento-fuerte`)
+   y botón WhatsApp (verde oficial 2.92:1 → `--color-whatsapp` oscurecido).
+3. Orden de encabezados: h3 sin h2 previo en tarjetas de prenda y sección
+   express → ahora h2.
+Dark mode verificado visualmente en móvil. MercadoPago agregado: links v1
+en main + rama `mercadopago` (Checkout Pro) — ver entrada anterior.

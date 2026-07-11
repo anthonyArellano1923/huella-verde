@@ -73,6 +73,13 @@ const esActual = (href: string) =>
     font-size: 1.2em;
   }
 
+  /* Como ítem flex, nav no puede encogerse bajo su contenido por defecto
+     (min-width:auto) y desborda la página en móvil; con esto el scroll
+     horizontal queda DENTRO de la lista, no en el body. */
+  nav {
+    min-inline-size: 0;
+  }
+
   nav ul {
     display: flex;
     gap: var(--espacio-xs);
