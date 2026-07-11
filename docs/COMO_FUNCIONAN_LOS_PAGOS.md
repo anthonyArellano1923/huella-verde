@@ -92,3 +92,30 @@ Carrito → `/api/pago/crear` → formulario Webpay de integración → tarjeta 
 prueba → banco simulado → retorno con commit → **voucher aprobado** (orden
 `MM-PR-…`, $15.990, VISA ****6623) y carrito vaciado. Validaciones de stock,
 producto desconocido y reserva verificadas por API.
+
+---
+
+# Anexo de esta rama: MercadoPago Checkout Pro
+
+Misma arquitectura que Webpay (carrito → serverless → redirect → retorno),
+con tres diferencias que valen una lección:
+
+1. **Preferencia en vez de transacción:** a MP se le mandan los ÍTEMS
+   (nombre, cantidad, precio unitario) y él arma el checkout. Transbank solo
+   recibía el monto total.
+2. **No hay "commit":** MP confirma el pago por su cuenta. La página de
+   retorno VERIFICA consultando el `payment_id` a la API (nunca confiar en
+   los query params del navegador). Además existe `/api/pago/webhook`: MP
+   avisa servidor-a-servidor de cada cambio de estado, aunque el cliente
+   cierre la pestaña — ese es el canal confiable.
+3. **Credenciales propias incluso para probar:** a diferencia de Transbank
+   (credenciales de integración públicas), acá hay que crear una aplicación
+   en developers.mercadopago.com y definir `MP_ACCESS_TOKEN` (ver
+   `.env.example`). Sin token, el endpoint responde 503 con mensaje claro
+   y la web sigue funcionando (WhatsApp como respaldo).
+
+Estado `pending` (nuevo vs Webpay): pagos en efectivo tardan en acreditarse;
+la página de retorno lo explica al cliente.
+
+**Pendiente para probar E2E:** cuenta de MercadoPago de Anthony/Martha con
+token de prueba. El código está listo; sin cuenta no se puede simular.

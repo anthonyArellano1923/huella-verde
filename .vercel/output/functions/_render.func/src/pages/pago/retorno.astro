@@ -1,64 +1,58 @@
 ---
 /**
- * Página de retorno de Webpay (prerender = false: corre en el servidor en
- * cada visita, porque debe CONFIRMAR la transacción con Transbank).
+ * Página de retorno de MercadoPago (prerender = false: corre en el servidor,
+ * porque debe VERIFICAR el pago contra la API de MP).
  *
- * Flujos posibles según lo que manda Webpay:
- * - `token_ws` presente → el cliente terminó el formulario de pago; hay que
- *   hacer commit() DEL LADO DEL SERVIDOR para saber si fue autorizado o
- *   rechazado. Sin commit, el pago queda en el limbo y se reversa solo.
- * - `TBK_TOKEN` presente → el cliente anuló dentro de Webpay.
- * - Nada → alguien entró directo a la URL.
+ * MP redirige con query params (?payment_id=&status=&external_reference=...),
+ * pero esos parámetros los trae el NAVEGADOR del cliente y podrían
+ * falsificarse. Por eso el estado que se muestra sale de consultar el
+ * payment_id directamente a la API de MercadoPago con el access token:
+ * la única fuente de verdad.
  */
 import Base from '../../layouts/Base.astro';
 import { NEGOCIO } from '../../data/negocio';
 import { formatCLP } from '../../utils/money';
 import { waLink } from '../../utils/whatsapp';
-import { webpayTransaction } from '../../lib/transbank';
+import { mpPayment } from '../../lib/mercadopago';
 
 export const prerender = false;
 
-// Webpay puede volver por GET o por POST según el flujo: se revisan ambos.
-const params =
-  Astro.request.method === 'POST'
-    ? new URLSearchParams(await Astro.request.text())
-    : Astro.url.searchParams;
+const params = Astro.url.searchParams;
+const paymentId = params.get('payment_id') ?? params.get('collection_id');
 
-const tokenWs = params.get('token_ws');
-const tokenAnulacion = params.get('TBK_TOKEN');
-
-type Estado = 'aprobado' | 'rechazado' | 'anulado' | 'invalido' | 'error';
+type Estado = 'aprobado' | 'pendiente' | 'rechazado' | 'invalido' | 'error';
 let estado: Estado = 'invalido';
-let detalle: { buyOrder: string; monto: number; tarjeta: string; codigoAutorizacion: string } | null = null;
+let detalle: { referencia: string; monto: number; medio: string; idPago: string } | null = null;
 
-if (tokenWs) {
+if (paymentId && paymentId !== 'null') {
   try {
-    const tx = webpayTransaction();
-    const r = await tx.commit(tokenWs);
-    if (r.response_code === 0 && r.status === 'AUTHORIZED') {
+    const pago = await mpPayment().get({ id: paymentId });
+    if (pago.status === 'approved') {
       estado = 'aprobado';
-      detalle = {
-        buyOrder: r.buy_order,
-        monto: r.amount,
-        tarjeta: r.card_detail?.card_number ?? '****',
-        codigoAutorizacion: r.authorization_code,
-      };
+    } else if (pago.status === 'in_process' || pago.status === 'pending') {
+      // Ej: pago en efectivo — se acredita después.
+      estado = 'pendiente';
     } else {
       estado = 'rechazado';
     }
+    detalle = {
+      referencia: pago.external_reference ?? '—',
+      monto: pago.transaction_amount ?? 0,
+      medio: pago.payment_method_id ?? 'MercadoPago',
+      idPago: String(pago.id),
+    };
   } catch (err) {
-    console.error('Error confirmando transacción Webpay:', err);
+    console.error('Error verificando pago en MercadoPago:', err);
     estado = 'error';
   }
-} else if (tokenAnulacion) {
-  estado = 'anulado';
 }
 
-const esReserva = detalle?.buyOrder.includes('-RS-') ?? false;
+const esReserva = detalle?.referencia.includes('-RS-') ?? false;
 const waComprobante = detalle
   ? waLink(
-      `¡Hola! Acabo de pagar con Webpay en la web de ${NEGOCIO.nombre}.\n` +
-        `Orden: ${detalle.buyOrder}\n` +
+      `¡Hola! Acabo de pagar con MercadoPago en la web de ${NEGOCIO.nombre}.\n` +
+        `Referencia: ${detalle.referencia}\n` +
+        `Pago MP: ${detalle.idPago}\n` +
         `Monto: ${formatCLP(detalle.monto)}\n` +
         (esReserva
           ? 'Es el pago de una reserva — te confirmo la hora que agendé.'
@@ -68,45 +62,53 @@ const waComprobante = detalle
 
 const titulos: Record<Estado, string> = {
   aprobado: '¡Pago aprobado! 🎉',
+  pendiente: 'Pago en proceso',
   rechazado: 'Pago rechazado',
-  anulado: 'Pago anulado',
   invalido: 'Página de retorno de pagos',
-  error: 'No pudimos confirmar tu pago',
+  error: 'No pudimos verificar tu pago',
 };
 ---
 
-<Base titulo={titulos[estado]} descripcion="Resultado de tu pago con Webpay.">
+<Base titulo={titulos[estado]} descripcion="Resultado de tu pago con MercadoPago.">
   <div class="contenedor resultado">
     <h1>{titulos[estado]}</h1>
 
     {
-      estado === 'aprobado' && detalle && (
+      (estado === 'aprobado' || estado === 'pendiente') && detalle && (
         <>
-          <dl class="voucher">
+          <dl class:list={['voucher', { pendiente: estado === 'pendiente' }]}>
             <div>
-              <dt>Orden de compra</dt>
-              <dd>{detalle.buyOrder}</dd>
+              <dt>Referencia</dt>
+              <dd>{detalle.referencia}</dd>
             </div>
             <div>
-              <dt>Monto pagado</dt>
+              <dt>Monto</dt>
               <dd>{formatCLP(detalle.monto)}</dd>
             </div>
             <div>
-              <dt>Tarjeta</dt>
-              <dd>**** {detalle.tarjeta.slice(-4)}</dd>
+              <dt>Medio de pago</dt>
+              <dd>{detalle.medio}</dd>
             </div>
             <div>
-              <dt>Código de autorización</dt>
-              <dd>{detalle.codigoAutorizacion}</dd>
+              <dt>N° de pago MP</dt>
+              <dd>{detalle.idPago}</dd>
             </div>
           </dl>
+
+          {estado === 'pendiente' && (
+            <p class="nota-pendiente">
+              Tu pago está en proceso (por ejemplo, pago en efectivo o
+              transferencia que tarda en acreditarse). Te llegará un correo de
+              MercadoPago cuando se confirme.
+            </p>
+          )}
 
           {esReserva ? (
             <div class="siguiente">
               <h2>Último paso: elige tu hora</h2>
               <p>
-                Tu pago quedó registrado con la orden <strong>{detalle.buyOrder}</strong>.
-                Ahora agenda la hora en el calendario y <strong>escribe esta orden en las
+                Tu pago quedó registrado con la referencia <strong>{detalle.referencia}</strong>.
+                Ahora agenda la hora en el calendario y <strong>escribe esta referencia en las
                 notas de la reserva</strong> para que Martha la asocie a tu pago.
               </p>
               <a class="boton" href="/reservar/">Agendar mi hora →</a>
@@ -124,7 +126,7 @@ const titulos: Record<Estado, string> = {
             </div>
           )}
 
-          <p class="script-carrito" data-limpiar-carrito={esReserva ? undefined : ''} />
+          {estado === 'aprobado' && !esReserva && <p class="script-carrito" data-limpiar-carrito="" />}
         </>
       )
     }
@@ -132,18 +134,9 @@ const titulos: Record<Estado, string> = {
     {
       estado === 'rechazado' && (
         <p>
-          Tu banco no autorizó el pago (fondos, cupo o datos de la tarjeta).
+          El pago no fue autorizado (fondos, cupo o datos del medio de pago).
           No se descontó dinero. Puedes <a href="/carrito/">intentar de nuevo</a> con
-          otra tarjeta, o <a href="/ropita/">volver al catálogo</a>.
-        </p>
-      )
-    }
-
-    {
-      estado === 'anulado' && (
-        <p>
-          Cancelaste el pago en Webpay — no se cobró nada.
-          Tu carrito sigue guardado si quieres <a href="/carrito/">retomarlo</a>.
+          otro medio, o <a href="/ropita/">volver al catálogo</a>.
         </p>
       )
     }
@@ -151,10 +144,10 @@ const titulos: Record<Estado, string> = {
     {
       estado === 'error' && (
         <p>
-          Ocurrió un problema al confirmar con Transbank. <strong>Si viste el
-          comprobante de Webpay, tu pago probablemente se realizó</strong> —
-          escríbenos por <a href={waLink(`Hola, pagué con Webpay en la web de ${NEGOCIO.nombre} pero la confirmación falló. ¿Me ayudan a verificar?`)} rel="noopener">WhatsApp</a> y
-          lo verificamos al tiro. Si no alcanzaste a pagar, intenta de nuevo.
+          Ocurrió un problema al verificar con MercadoPago. <strong>Si viste el
+          comprobante de MP, tu pago probablemente se realizó</strong> —
+          escríbenos por <a href={waLink(`Hola, pagué con MercadoPago en la web de ${NEGOCIO.nombre} pero la verificación falló. ¿Me ayudan a revisar?`)} rel="noopener">WhatsApp</a> y
+          lo revisamos al tiro.
         </p>
       )
     }
@@ -162,8 +155,8 @@ const titulos: Record<Estado, string> = {
     {
       estado === 'invalido' && (
         <p>
-          Esta página muestra el resultado de un pago con Webpay. Si llegaste
-          aquí por error, <a href="/">vuelve al inicio</a>.
+          Esta página muestra el resultado de un pago con MercadoPago. Si
+          llegaste aquí por error, <a href="/">vuelve al inicio</a>.
         </p>
       )
     }
@@ -202,6 +195,10 @@ const titulos: Record<Estado, string> = {
     border: 2px solid var(--color-exito);
     border-radius: var(--radio-m);
 
+    &.pendiente {
+      border-color: var(--color-acento);
+    }
+
     & dt {
       font-size: var(--texto-s);
       color: var(--color-texto-suave);
@@ -212,6 +209,10 @@ const titulos: Record<Estado, string> = {
       font-weight: 700;
       overflow-wrap: anywhere;
     }
+  }
+
+  .nota-pendiente {
+    margin-block-end: var(--espacio-l);
   }
 
   .siguiente {

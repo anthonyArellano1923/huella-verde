@@ -99,3 +99,14 @@ Whisper/mlx en el Mac de Anthony) + mensaje de Anthony:
   menta + acento floral rosado. Feedback de Anthony: nada de beige/crema.
   Favicon y OG actualizados a Huella Verde.
 >>>>>>> main
+
+## 2026-07-11 · Claude (rama mercadopago: Checkout Pro)
+
+Tercera rama de pagos (desde transbank, reemplaza el proveedor):
+`mercadopago@3` SDK, `src/lib/mercadopago.ts` (Preference/Payment,
+MP_ACCESS_TOKEN requerido), `/api/pago/crear` crea preferencia con ítems y
+back_urls, `/pago/retorno` verifica el payment_id contra la API (estados
+approved/pending/rejected), `/api/pago/webhook` para notificaciones
+servidor-a-servidor (v1: verifica y loggea; Fase 7: escribirá en DB).
+transbank-sdk desinstalado en esta rama. Sin credenciales el endpoint
+degrada a 503 con mensaje claro (probado). E2E pendiente de cuenta MP.

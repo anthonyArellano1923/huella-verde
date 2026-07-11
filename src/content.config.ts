@@ -32,6 +32,13 @@ const prendas = defineCollection({
       temporada: z.enum(['invierno', 'verano', 'todo-el-año']).default('invierno'),
       /** Prendas destacadas aparecen primero y en la portada. */
       destacada: z.boolean().default(false),
+      /**
+       * Link de pago de MercadoPago (Fase 4 v1): la dueña lo crea en su app
+       * de MP ("Link de pago" → copiar URL) y se pega aquí. Si existe, la
+       * página de la prenda muestra el botón "Pagar online"; si no, solo
+       * WhatsApp. TODO(Anthony): requiere la cuenta MP de Martha.
+       */
+      linkMercadoPago: z.string().url().optional(),
     }),
 });
 

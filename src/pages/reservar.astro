@@ -86,14 +86,14 @@ const datosCliente = {
     <aside class="pagar-online">
       <h2>¿Quieres dejar tu hora pagada? <span class="opcional">(opcional)</span></h2>
       <p>
-        Paga ahora con Webpay y agenda después: al aprobarse el pago recibirás
+        Paga ahora con MercadoPago y agenda después: al aprobarse el pago recibirás
         una <strong>orden de compra</strong> para escribir en las notas de tu
         reserva. Se paga el <strong>precio base ("desde")</strong>; si tu
         perrito requiere trabajo extra por su raza, la diferencia se paga en
         el local. También puedes pagar todo en el local, como siempre.
       </p>
       <button class="boton boton--secundario" type="button" id="boton-pagar-reserva">
-        Pagar esta reserva con Webpay
+        Pagar esta reserva con MercadoPago
       </button>
       <p class="error-pago" id="error-pago-reserva" role="alert" hidden></p>
     </aside>
@@ -174,7 +174,7 @@ const datosCliente = {
       `${textoPrecio}, entre 1½ y 2 horas. Paga en el local u online, como prefieras.`;
   }
 
-  // — Pago online de la reserva (Webpay) —
+  // — Pago online de la reserva (MercadoPago) —
   const botonPagar = document.getElementById('boton-pagar-reserva');
   const errorPago = document.getElementById('error-pago-reserva');
 
@@ -186,13 +186,13 @@ const datosCliente = {
     botonPagar.disabled = sinPrecio;
     botonPagar.textContent = sinPrecio
       ? 'Este servicio se cotiza por WhatsApp'
-      : 'Pagar esta reserva con Webpay';
+      : 'Pagar esta reserva con MercadoPago';
   }
 
   botonPagar.addEventListener('click', async () => {
     const { servicioId, tamanoId } = seleccionActual();
     botonPagar.disabled = true;
-    botonPagar.textContent = 'Conectando con Webpay…';
+    botonPagar.textContent = 'Conectando con MercadoPago…';
     errorPago.hidden = true;
     try {
       const res = await fetch('/api/pago/crear', {
@@ -202,12 +202,12 @@ const datosCliente = {
       });
       const datos = await res.json();
       if (!res.ok) throw new Error(datos.error || 'No se pudo iniciar el pago.');
-      window.location.href = `${datos.url}?token_ws=${datos.token}`;
+      window.location.href = datos.url;
     } catch (e) {
       errorPago.textContent = e.message || 'Error inesperado. Intenta de nuevo.';
       errorPago.hidden = false;
       botonPagar.disabled = false;
-      botonPagar.textContent = 'Pagar esta reserva con Webpay';
+      botonPagar.textContent = 'Pagar esta reserva con MercadoPago';
     }
   });
 

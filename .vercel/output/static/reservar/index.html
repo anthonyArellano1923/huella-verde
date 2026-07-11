@@ -5,13 +5,13 @@ Elige el servicio, luego el día y la hora en el calendario. Te llegará
         la confirmación por correo y puedes cancelar o cambiar la hora desde
         el mismo correo.
 </p> <ul class="politicas" data-astro-cid-7hy4lz2r> <li data-astro-cid-7hy4lz2r>Las reservas se hacen con al menos <strong data-astro-cid-7hy4lz2r>24 horas de anticipación</strong>, y puedes cancelar hasta <strong data-astro-cid-7hy4lz2r>3 horas antes</strong>.</li> <li data-astro-cid-7hy4lz2r>Cada servicio toma entre 1½ y 2 horas; la última hora del día es a las <strong data-astro-cid-7hy4lz2r>17:30</strong>.</li> <li data-astro-cid-7hy4lz2r>Los precios son &quot;desde&quot;: el valor final depende de la complejidad de la raza y se conversa contigo antes de empezar.</li> <li data-astro-cid-7hy4lz2r>Si ningún horario te acomoda, escríbenos por WhatsApp: los horarios especiales son conversables (también con 24 h de anticipación).</li> </ul> </header> <form class="selector" aria-label="Elige servicio y tamaño de tu perro" data-astro-cid-7hy4lz2r> <fieldset data-astro-cid-7hy4lz2r> <legend data-astro-cid-7hy4lz2r>Servicio</legend> <div class="pildoras" data-astro-cid-7hy4lz2r> <label data-astro-cid-7hy4lz2r> <input type="radio" name="servicio" value="bano" checked data-astro-cid-7hy4lz2r> <span data-astro-cid-7hy4lz2r>Baño completo</span> </label><label data-astro-cid-7hy4lz2r> <input type="radio" name="servicio" value="mantencion-corte" data-astro-cid-7hy4lz2r> <span data-astro-cid-7hy4lz2r>Mantención + corte</span> </label><label data-astro-cid-7hy4lz2r> <input type="radio" name="servicio" value="stripping" data-astro-cid-7hy4lz2r> <span data-astro-cid-7hy4lz2r>Stripping</span> </label><label data-astro-cid-7hy4lz2r> <input type="radio" name="servicio" value="deslanado" data-astro-cid-7hy4lz2r> <span data-astro-cid-7hy4lz2r>Deslanado</span> </label> </div> </fieldset> <fieldset data-astro-cid-7hy4lz2r> <legend data-astro-cid-7hy4lz2r>Tamaño de tu perro</legend> <div class="pildoras" data-astro-cid-7hy4lz2r> <label data-astro-cid-7hy4lz2r> <input type="radio" name="tamano" value="pequeno" checked data-astro-cid-7hy4lz2r> <span data-astro-cid-7hy4lz2r>Pequeño</span> <small data-astro-cid-7hy4lz2r>Hasta 10 kg (poodle toy, yorkshire, shih tzu…)</small> </label><label data-astro-cid-7hy4lz2r> <input type="radio" name="tamano" value="mediano" data-astro-cid-7hy4lz2r> <span data-astro-cid-7hy4lz2r>Mediano</span> <small data-astro-cid-7hy4lz2r>10 a 25 kg (cocker, schnauzer, beagle…)</small> </label><label data-astro-cid-7hy4lz2r> <input type="radio" name="tamano" value="grande" data-astro-cid-7hy4lz2r> <span data-astro-cid-7hy4lz2r>Grande</span> <small data-astro-cid-7hy4lz2r>Más de 25 kg (golden, labrador, ovejero…)</small> </label> </div> </fieldset> </form> <p class="referencia" id="referencia-precio" aria-live="polite" data-astro-cid-7hy4lz2r>  </p> <aside class="pagar-online" data-astro-cid-7hy4lz2r> <h2 data-astro-cid-7hy4lz2r>¿Quieres dejar tu hora pagada? <span class="opcional" data-astro-cid-7hy4lz2r>(opcional)</span></h2> <p data-astro-cid-7hy4lz2r>
-Paga ahora con Webpay y agenda después: al aprobarse el pago recibirás
+Paga ahora con MercadoPago y agenda después: al aprobarse el pago recibirás
         una <strong data-astro-cid-7hy4lz2r>orden de compra</strong> para escribir en las notas de tu
         reserva. Se paga el <strong data-astro-cid-7hy4lz2r>precio base ("desde")</strong>; si tu
         perrito requiere trabajo extra por su raza, la diferencia se paga en
         el local. También puedes pagar todo en el local, como siempre.
 </p> <button class="boton boton--secundario" type="button" id="boton-pagar-reserva" data-astro-cid-7hy4lz2r>
-Pagar esta reserva con Webpay
+Pagar esta reserva con MercadoPago
 </button> <p class="error-pago" id="error-pago-reserva" role="alert" hidden data-astro-cid-7hy4lz2r></p> </aside> <div id="cal-contenedor" class="cal-contenedor" data-astro-cid-7hy4lz2r> <p class="cal-cargando" data-astro-cid-7hy4lz2r>Cargando la agenda…</p> </div> <p class="alternativa" data-astro-cid-7hy4lz2r>
 ¿No carga la agenda o ningún horario te acomoda?
 <a href="https://wa.me/56954417939?text=%C2%A1Hola!%20Quiero%20reservar%20una%20hora%20en%20Huella%20Verde.%20%C2%BFQu%C3%A9%20disponibilidad%20tienes%3F" rel="noopener" data-astro-cid-7hy4lz2r>Escríbenos por WhatsApp</a> y coordinamos.
@@ -82,7 +82,7 @@ Pagar esta reserva con Webpay
       `${textoPrecio}, entre 1½ y 2 horas. Paga en el local u online, como prefieras.`;
   }
 
-  // — Pago online de la reserva (Webpay) —
+  // — Pago online de la reserva (MercadoPago) —
   const botonPagar = document.getElementById('boton-pagar-reserva');
   const errorPago = document.getElementById('error-pago-reserva');
 
@@ -94,13 +94,13 @@ Pagar esta reserva con Webpay
     botonPagar.disabled = sinPrecio;
     botonPagar.textContent = sinPrecio
       ? 'Este servicio se cotiza por WhatsApp'
-      : 'Pagar esta reserva con Webpay';
+      : 'Pagar esta reserva con MercadoPago';
   }
 
   botonPagar.addEventListener('click', async () => {
     const { servicioId, tamanoId } = seleccionActual();
     botonPagar.disabled = true;
-    botonPagar.textContent = 'Conectando con Webpay…';
+    botonPagar.textContent = 'Conectando con MercadoPago…';
     errorPago.hidden = true;
     try {
       const res = await fetch('/api/pago/crear', {
@@ -110,12 +110,12 @@ Pagar esta reserva con Webpay
       });
       const datos = await res.json();
       if (!res.ok) throw new Error(datos.error || 'No se pudo iniciar el pago.');
-      window.location.href = `${datos.url}?token_ws=${datos.token}`;
+      window.location.href = datos.url;
     } catch (e) {
       errorPago.textContent = e.message || 'Error inesperado. Intenta de nuevo.';
       errorPago.hidden = false;
       botonPagar.disabled = false;
-      botonPagar.textContent = 'Pagar esta reserva con Webpay';
+      botonPagar.textContent = 'Pagar esta reserva con MercadoPago';
     }
   });
 
