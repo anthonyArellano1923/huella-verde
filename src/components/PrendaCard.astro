@@ -24,7 +24,7 @@ const agotada = stock === 0;
       {agotada && <span class="etiqueta">Agotada</span>}
     </div>
     <div class="info">
-      <h3>{nombre}</h3>
+      <h2>{nombre}</h2>
       <p class="descripcion">{descripcion}</p>
       <p class="datos">
         <span class="precio">{formatCLP(precio)}</span>
@@ -85,7 +85,7 @@ const agotada = stock === 0;
     padding: var(--espacio-m);
   }
 
-  h3 {
+  h2 {
     font-size: var(--texto-base);
   }
 
@@ -116,7 +116,7 @@ const agotada = stock === 0;
     padding: 0.1em 0.7em;
     border-radius: var(--radio-pill);
     background: var(--color-acento-suave);
-    color: var(--color-acento);
+    color: var(--color-acento-fuerte);
     font-weight: 600;
   }
 </style>
