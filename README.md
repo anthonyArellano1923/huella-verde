@@ -6,9 +6,14 @@ tejida a mano. Astro 5 + islas React + CSS moderno, desplegada en Vercel.
 ## Ramas
 
 - **`main`** — producción. Venta de ropita coordinando **transferencia por
-  WhatsApp** (cero servidor, cero comisión). Servicios se pagan en el local.
+  WhatsApp** (cero servidor, cero comisión) + botón opcional de **link de
+  pago MercadoPago** por prenda (`linkMercadoPago` en el frontmatter).
+  Servicios se pagan en el local.
 - **`transbank`** — pago online con **Webpay Plus** para productos y reservas
-  (funciones serverless en Vercel, ambiente de integración de Transbank).
+  (serverless en Vercel; probado E2E en el ambiente de integración).
+- **`mercadopago`** — pago online con **Checkout Pro** para productos y
+  reservas (serverless en Vercel; requiere `MP_ACCESS_TOKEN`, ver
+  `.env.example` de esa rama).
 
 ## Comandos
 

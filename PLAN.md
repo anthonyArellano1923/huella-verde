@@ -41,15 +41,16 @@
 
 ## FASE 4 — Pagos (agente: `pagos-chile`) — SOLO cuando la Fase 3 esté en producción
 
-> **Decisión 2026-07-11:** dos ramas para comparar modelos de cobro.
-> Rama `main` = coordinar **transferencia por WhatsApp** (v0, cero código).
-> Rama `transbank` = **Webpay Plus** para productos y reservas (serverless en Vercel, ambiente de integración).
-> MercadoPago (v1/v2 de abajo) sigue vigente como alternativa a evaluar con ventas reales.
+> **Decisión 2026-07-11 (actualizada):** tres ramas para comparar modelos de cobro.
+> Rama `main` = **transferencia por WhatsApp** + botón opcional con **link de pago de MercadoPago** por prenda (v1, cero servidor).
+> Rama `transbank` = **Webpay Plus** para productos y reservas (probado E2E en integración).
+> Rama `mercadopago` = **Checkout Pro** para productos y reservas (falta cuenta MP para probar E2E).
+> La plataforma "principal" se decide con la dueña comparando comisiones y facilidad de contrato.
 
 - [X] v0: coordinación de transferencia vía WhatsApp con mensaje pre-armado (rama `main`)
 - [X] Alternativa Transbank: Webpay Plus con funciones serverless (rama `transbank`)
-- [ ] v1: botones con **links de pago de MercadoPago** por prenda (cero código de servidor)
-- [ ] v2: Checkout Pro con función serverless en Vercel — el agente implementa Y te explica el flujo (preferencia → redirect → webhook) línea por línea
+- [X] v1: botones con **links de pago de MercadoPago** por prenda (campo `linkMercadoPago` en el frontmatter; falta cuenta MP real para generar los links)
+- [X] v2: Checkout Pro con función serverless en Vercel (rama `mercadopago`: preferencia → redirect → verificación → webhook; falta MP_ACCESS_TOKEN para E2E)
 - [X] `documentador`: `docs/COMO_FUNCIONAN_LOS_PAGOS.md` — tu primera lección de backend real
 
 ## FASE 5 — Pulido y accesibilidad (agente: `accesibilidad-qa`)
