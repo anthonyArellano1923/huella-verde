@@ -1,0 +1,86 @@
+---
+/**
+ * Tabla de precios servicio × tamaño. Se alimenta 100% de src/data/servicios.ts:
+ * cambiar un precio allá actualiza esta tabla, la página de reservas y el
+ * checkout de la rama transbank.
+ */
+import { SERVICIOS, TAMANOS } from '../data/servicios';
+import { formatCLP } from '../utils/money';
+---
+
+<div class="envoltorio" tabindex="0" role="region" aria-label="Tabla de precios por servicio y tamaño de perro">
+  <table>
+    <caption class="visualmente-oculto">
+      Precios y duración de cada servicio según el tamaño del perro
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Servicio</th>
+        {TAMANOS.map((t) => <th scope="col">{t.nombre}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        SERVICIOS.map((s) => (
+          <tr>
+            <th scope="row">{s.nombre}</th>
+            {TAMANOS.map((t) => {
+              const celda = s.porTamano[t.id];
+              return (
+                <td>
+                  <strong>{formatCLP(celda.precio)}</strong>
+                  <span class="duracion">~{celda.duracionMin} min</span>
+                </td>
+              );
+            })}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  /* La tabla scrollea horizontal en pantallas chicas, la página nunca */
+  .envoltorio {
+    overflow-x: auto;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m);
+    background: var(--color-superficie);
+  }
+
+  table {
+    width: 100%;
+    min-width: 34rem;
+    border-collapse: collapse;
+    font-size: var(--texto-s);
+  }
+
+  th,
+  td {
+    padding: var(--espacio-s) var(--espacio-m);
+    text-align: left;
+    border-block-end: 1px solid var(--color-borde);
+  }
+
+  tbody tr:last-child :is(th, td) {
+    border-block-end: none;
+  }
+
+  thead th {
+    background: var(--color-primario-suave);
+    color: var(--color-primario-fuerte);
+  }
+
+  tbody th {
+    font-weight: 600;
+  }
+
+  td strong {
+    display: block;
+  }
+
+  .duracion {
+    color: var(--color-texto-suave);
+  }
+</style>

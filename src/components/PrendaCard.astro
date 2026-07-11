@@ -1,0 +1,122 @@
+---
+/**
+ * Tarjeta de prenda para la grilla del catálogo. La foto se optimiza con
+ * astro:assets (AVIF/WebP + tamaños responsivos) cuando es JPG/PNG; los
+ * SVG placeholder pasan tal cual.
+ */
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { formatCLP } from '../utils/money';
+
+interface Props {
+  prenda: CollectionEntry<'prendas'>;
+}
+
+const { prenda } = Astro.props;
+const { nombre, descripcion, talla, precio, foto, fotoAlt, stock } = prenda.data;
+const agotada = stock === 0;
+---
+
+<article class:list={['tarjeta', { agotada }]}>
+  <a href={`/ropita/${prenda.id}/`}>
+    <div class="foto">
+      <Image src={foto} alt={fotoAlt} width={600} height={600} loading="lazy" />
+      {agotada && <span class="etiqueta">Agotada</span>}
+    </div>
+    <div class="info">
+      <h3>{nombre}</h3>
+      <p class="descripcion">{descripcion}</p>
+      <p class="datos">
+        <span class="precio">{formatCLP(precio)}</span>
+        <span class="talla">Talla {talla}</span>
+      </p>
+    </div>
+  </a>
+</article>
+
+<style>
+  .tarjeta {
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m);
+    overflow: hidden;
+    box-shadow: var(--sombra-tarjeta);
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+    }
+
+    & > a {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+    }
+  }
+
+  .foto {
+    position: relative;
+    aspect-ratio: 1;
+
+    & img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .agotada .foto {
+    opacity: 0.55;
+  }
+
+  .etiqueta {
+    position: absolute;
+    top: var(--espacio-s);
+    right: var(--espacio-s);
+    padding: 0.2em 0.8em;
+    border-radius: var(--radio-pill);
+    background: var(--color-error);
+    color: var(--color-texto-invertido);
+    font-size: var(--texto-s);
+    font-weight: 700;
+  }
+
+  .info {
+    padding: var(--espacio-m);
+  }
+
+  h3 {
+    font-size: var(--texto-base);
+  }
+
+  .descripcion {
+    margin-block: var(--espacio-xs);
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .datos {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-start: var(--espacio-s);
+  }
+
+  .precio {
+    font-weight: 700;
+    color: var(--color-primario-fuerte);
+  }
+
+  .talla {
+    font-size: var(--texto-s);
+    padding: 0.1em 0.7em;
+    border-radius: var(--radio-pill);
+    background: var(--color-acento-suave);
+    color: var(--color-acento);
+    font-weight: 600;
+  }
+</style>

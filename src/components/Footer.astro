@@ -1,0 +1,84 @@
+---
+import { NEGOCIO } from '../data/negocio';
+import { waLinkConsulta } from '../utils/whatsapp';
+
+const anio = new Date().getFullYear();
+---
+
+<footer>
+  <div class="contenedor columnas">
+    <section>
+      <h2>{NEGOCIO.nombre}</h2>
+      <p>{NEGOCIO.slogan}</p>
+      <p>
+        {NEGOCIO.direccion.calle}, {NEGOCIO.direccion.comuna}<br />
+        {NEGOCIO.direccion.ciudad}
+      </p>
+    </section>
+
+    <section>
+      <h2>Horarios</h2>
+      <ul>
+        {
+          NEGOCIO.horarios.map((h) => (
+            <li>
+              <strong>{h.dias}:</strong> {h.horas}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2>Contacto</h2>
+      <ul>
+        <li>
+          <a href={waLinkConsulta()} rel="noopener">WhatsApp</a>
+        </li>
+        <li>
+          <a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <p class="contenedor legal">© {anio} {NEGOCIO.nombre} · Hecho con cariño en Chile 🇨🇱</p>
+</footer>
+
+<style>
+  footer {
+    margin-block-start: var(--espacio-2xl);
+    padding-block: var(--espacio-xl) var(--espacio-l);
+    background: var(--color-superficie);
+    border-block-start: 1px solid var(--color-borde);
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+  }
+
+  .columnas {
+    display: grid;
+    gap: var(--espacio-l);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+
+  h2 {
+    font-size: var(--texto-base);
+    color: var(--color-texto);
+    margin-block-end: var(--espacio-s);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--espacio-xs);
+  }
+
+  .legal {
+    margin-block-start: var(--espacio-xl);
+    padding-block-start: var(--espacio-m);
+    border-block-start: 1px solid var(--color-borde);
+    text-align: center;
+  }
+</style>

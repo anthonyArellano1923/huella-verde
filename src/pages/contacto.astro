@@ -1,0 +1,105 @@
+---
+/** Contacto: WhatsApp como canal principal, dirección y horarios. */
+import Base from '../layouts/Base.astro';
+import { NEGOCIO } from '../data/negocio';
+import { waLinkConsulta } from '../utils/whatsapp';
+
+const consultaMapa = encodeURIComponent(
+  `${NEGOCIO.direccion.calle}, ${NEGOCIO.direccion.comuna}, ${NEGOCIO.direccion.ciudad}`
+);
+---
+
+<Base
+  titulo="Contacto"
+  descripcion={`Escríbenos por WhatsApp o visítanos en ${NEGOCIO.direccion.comuna}. Horarios y ubicación de la peluquería.`}
+>
+  <div class="contenedor">
+    <header class="encabezado">
+      <h1>Contacto</h1>
+      <p>La forma más rápida de hablar con nosotros es por WhatsApp:</p>
+      <a class="boton boton--whatsapp" href={waLinkConsulta()} rel="noopener">
+        Escribir por WhatsApp
+      </a>
+    </header>
+
+    <div class="tarjetas">
+      <section>
+        <h2>Dónde estamos</h2>
+        <p>
+          {NEGOCIO.direccion.calle}<br />
+          {NEGOCIO.direccion.comuna}, {NEGOCIO.direccion.ciudad}
+        </p>
+        <p>
+          <a href={`https://www.google.com/maps/search/?api=1&query=${consultaMapa}`} rel="noopener">
+            Ver en Google Maps →
+          </a>
+        </p>
+      </section>
+
+      <section>
+        <h2>Horarios</h2>
+        <ul>
+          {
+            NEGOCIO.horarios.map((h) => (
+              <li>
+                <strong>{h.dias}:</strong> {h.horas}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h2>Correo</h2>
+        <p>
+          <a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a>
+        </p>
+        <p class="nota">Para reservas usa mejor <a href="/reservar/">la agenda online</a> — es al tiro.</p>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .encabezado {
+    padding-block: var(--espacio-xl) var(--espacio-l);
+    max-width: 60ch;
+
+    & p {
+      margin-block: var(--espacio-m);
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .tarjetas {
+    display: grid;
+    gap: var(--espacio-m);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+
+    & section {
+      padding: var(--espacio-l);
+      background: var(--color-superficie);
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-m);
+    }
+
+    & h2 {
+      font-size: var(--texto-l);
+      margin-block-end: var(--espacio-s);
+    }
+
+    & ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: var(--espacio-xs);
+    }
+  }
+
+  .nota {
+    margin-block-start: var(--espacio-s);
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+  }
+</style>

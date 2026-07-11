@@ -1,0 +1,74 @@
+---
+/**
+ * Layout base de todas las páginas: <head> con SEO/OG, header, footer y
+ * Schema.org LocalBusiness. Cada página define su título y descripción.
+ */
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SchemaLocalBusiness from '../components/SchemaLocalBusiness.astro';
+import { NEGOCIO } from '../data/negocio';
+
+interface Props {
+  titulo: string;
+  descripcion?: string;
+}
+
+const { titulo, descripcion = NEGOCIO.descripcion } = Astro.props;
+const tituloCompleto = `${titulo} · ${NEGOCIO.nombre}`;
+const canonical = new URL(Astro.url.pathname, NEGOCIO.url);
+---
+
+<!doctype html>
+<html lang="es-CL">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Open Graph: cómo se ve el enlace al compartirlo por WhatsApp/Instagram -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/og-image.svg', NEGOCIO.url)} />
+    <meta property="og:locale" content="es_CL" />
+
+    <SchemaLocalBusiness />
+  </head>
+  <body>
+    <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+    <Header />
+    <main id="contenido">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  /* Enlace "saltar al contenido": invisible hasta que se navega con Tab */
+  .saltar-contenido {
+    position: absolute;
+    top: -100%;
+    left: var(--espacio-m);
+    z-index: 100;
+    padding: var(--espacio-s) var(--espacio-m);
+    background: var(--color-superficie);
+    border-radius: 0 0 var(--radio-s) var(--radio-s);
+    font-weight: 600;
+
+    &:focus {
+      top: 0;
+    }
+  }
+
+  main {
+    min-height: 60vh;
+  }
+</style>

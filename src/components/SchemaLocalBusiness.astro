@@ -1,0 +1,31 @@
+---
+/**
+ * Datos estructurados Schema.org (JSON-LD) para SEO local: le dicen a Google
+ * "esto es un negocio físico, con esta dirección y estos horarios", lo que
+ * habilita el panel de negocio en los resultados de búsqueda (Fase 6).
+ */
+import { NEGOCIO, WHATSAPP_WA } from '../data/negocio';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  '@id': NEGOCIO.url,
+  name: NEGOCIO.nombre,
+  description: NEGOCIO.descripcion,
+  url: NEGOCIO.url,
+  telephone: `+${WHATSAPP_WA}`,
+  email: NEGOCIO.email,
+  image: new URL('/og-image.svg', NEGOCIO.url).href,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: NEGOCIO.direccion.calle,
+    addressLocality: NEGOCIO.direccion.comuna,
+    addressRegion: NEGOCIO.direccion.region,
+    addressCountry: 'CL',
+  },
+  openingHours: NEGOCIO.horariosSchema,
+  priceRange: '$$',
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

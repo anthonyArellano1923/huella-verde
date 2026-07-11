@@ -1,0 +1,149 @@
+---
+/** Portada: hero con llamado a reservar + servicios resumidos + ropita destacada. */
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import PrendaCard from '../components/PrendaCard.astro';
+import { NEGOCIO } from '../data/negocio';
+import { SERVICIOS } from '../data/servicios';
+import { formatCLP } from '../utils/money';
+
+const destacadas = (await getCollection('prendas', ({ data }) => data.destacada && data.stock > 0)).slice(0, 3);
+---
+
+<Base titulo="Peluquería canina y ropita de perro" descripcion={NEGOCIO.descripcion}>
+  <section class="hero">
+    <div class="contenedor">
+      <p class="saludo">🐾 Peluquería canina en {NEGOCIO.direccion.comuna}</p>
+      <h1>Tu perrito, limpio, peinado y <em>abrigado</em></h1>
+      <p class="bajada">
+        Baño, corte y stripping con hora reservada online — sin llamadas ni esperas.
+        Y para el invierno, ropita tejida a mano por {NEGOCIO.nombre}.
+      </p>
+      <div class="acciones">
+        <a class="boton" href="/reservar/">Reservar hora</a>
+        <a class="boton boton--secundario" href="/ropita/">Ver la ropita</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="contenedor seccion" aria-labelledby="titulo-servicios">
+    <h2 id="titulo-servicios">Servicios</h2>
+    <ul class="servicios">
+      {
+        SERVICIOS.map((s) => (
+          <li>
+            <h3>{s.nombre}</h3>
+            <p>{s.descripcion}</p>
+            <p class="desde">
+              Desde <strong>{formatCLP(s.porTamano.pequeno.precio)}</strong>
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      <a href="/servicios/">Ver precios por tamaño de perro →</a>
+    </p>
+  </section>
+
+  {
+    destacadas.length > 0 && (
+      <section class="contenedor seccion" aria-labelledby="titulo-ropita">
+        <h2 id="titulo-ropita">Ropita destacada</h2>
+        <p>Prendas únicas, tejidas a mano. Cuando se venden, se acabaron.</p>
+        <div class="grilla-prendas">
+          {destacadas.map((prenda) => (
+            <PrendaCard prenda={prenda} />
+          ))}
+        </div>
+        <p>
+          <a href="/ropita/">Ver todo el catálogo →</a>
+        </p>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .hero {
+    padding-block: var(--espacio-2xl);
+    background: linear-gradient(180deg, var(--color-primario-suave), var(--color-fondo));
+    text-align: center;
+  }
+
+  .saludo {
+    font-weight: 600;
+    color: var(--color-primario-fuerte);
+  }
+
+  .hero h1 {
+    max-width: 22ch;
+    margin-inline: auto;
+    margin-block: var(--espacio-s) var(--espacio-m);
+
+    & em {
+      font-style: normal;
+      color: var(--color-primario-fuerte);
+    }
+  }
+
+  .bajada {
+    max-width: 55ch;
+    margin-inline: auto;
+    color: var(--color-texto-suave);
+  }
+
+  .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--espacio-m);
+    margin-block-start: var(--espacio-l);
+  }
+
+  .seccion {
+    padding-block-start: var(--espacio-2xl);
+
+    & h2 {
+      margin-block-end: var(--espacio-m);
+    }
+  }
+
+  .servicios {
+    display: grid;
+    gap: var(--espacio-m);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 0 0 var(--espacio-m);
+    padding: 0;
+    list-style: none;
+
+    & li {
+      padding: var(--espacio-l);
+      background: var(--color-superficie);
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-m);
+      box-shadow: var(--sombra-tarjeta);
+    }
+
+    & h3 {
+      margin-block-end: var(--espacio-xs);
+    }
+
+    & p {
+      font-size: var(--texto-s);
+      color: var(--color-texto-suave);
+    }
+
+    & .desde {
+      margin-block-start: var(--espacio-s);
+      color: var(--color-texto);
+    }
+  }
+
+  .grilla-prendas {
+    display: grid;
+    gap: var(--espacio-m);
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    margin-block: var(--espacio-m);
+  }
+</style>

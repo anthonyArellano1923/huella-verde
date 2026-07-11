@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base titulo="Página no encontrada">
+  <div class="contenedor perdido">
+    <p class="emoji" aria-hidden="true">🐕‍🦺</p>
+    <h1>¡Guau! Esta página se escapó</h1>
+    <p>No encontramos lo que buscabas, pero el perrito de rescate ya está en camino.</p>
+    <a class="boton" href="/">Volver al inicio</a>
+  </div>
+</Base>
+
+<style>
+  .perdido {
+    padding-block: var(--espacio-2xl);
+    text-align: center;
+    display: grid;
+    gap: var(--espacio-m);
+    justify-items: center;
+  }
+
+  .emoji {
+    font-size: 4rem;
+  }
+</style>

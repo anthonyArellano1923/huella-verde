@@ -1,0 +1,106 @@
+---
+/**
+ * Header con navegación principal. En móvil las secciones caben en una fila
+ * scrolleable (sin menú hamburguesa: menos JS, más directo).
+ */
+import { NEGOCIO } from '../data/negocio';
+
+const enlaces = [
+  { href: '/', texto: 'Inicio' },
+  { href: '/servicios/', texto: 'Servicios' },
+  { href: '/reservar/', texto: 'Reservar' },
+  { href: '/ropita/', texto: 'Ropita' },
+  { href: '/contacto/', texto: 'Contacto' },
+];
+
+const rutaActual = Astro.url.pathname;
+const esActual = (href: string) =>
+  href === '/' ? rutaActual === '/' : rutaActual.startsWith(href);
+---
+
+<header>
+  <div class="contenedor barra">
+    <a class="marca" href="/">
+      <span class="marca__huella" aria-hidden="true">🐾</span>
+      <span class="marca__nombre">{NEGOCIO.nombre}</span>
+    </a>
+    <nav aria-label="Navegación principal">
+      <ul>
+        {
+          enlaces.map(({ href, texto }) => (
+            <li>
+              <a href={href} aria-current={esActual(href) ? 'page' : undefined}>
+                {texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-superficie);
+    border-block-end: 1px solid var(--color-borde);
+  }
+
+  .barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-s) var(--espacio-m);
+    padding-block: var(--espacio-s);
+  }
+
+  .marca {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-s);
+    font-family: var(--fuente-titulos);
+    font-size: var(--texto-l);
+    font-weight: 700;
+    color: var(--color-texto);
+    text-decoration: none;
+  }
+
+  .marca__huella {
+    font-size: 1.2em;
+  }
+
+  nav ul {
+    display: flex;
+    gap: var(--espacio-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    /* En pantallas chicas la fila navega con scroll horizontal */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  nav a {
+    display: block;
+    padding: 0.4em 0.8em;
+    border-radius: var(--radio-pill);
+    color: var(--color-texto-suave);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+      color: var(--color-primario-fuerte);
+      background: var(--color-primario-suave);
+    }
+
+    &[aria-current='page'] {
+      color: var(--color-texto-invertido);
+      background: var(--color-primario);
+    }
+  }
+</style>

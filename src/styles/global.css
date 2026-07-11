@@ -1,0 +1,151 @@
+/*
+ * Estilos globales — reset mínimo + base tipográfica + utilidades.
+ * Mobile-first: todo se diseña para 360px y crece con container/media queries.
+ */
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  color-scheme: light dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--fuente-texto);
+  font-size: var(--texto-base);
+  line-height: 1.6;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--fuente-titulos);
+  line-height: 1.15;
+  text-wrap: balance;
+  font-weight: 700;
+}
+
+h1 { font-size: var(--texto-2xl); }
+h2 { font-size: var(--texto-xl); }
+h3 { font-size: var(--texto-l); }
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--color-primario);
+
+  &:hover {
+    color: var(--color-primario-fuerte);
+  }
+}
+
+button {
+  font: inherit;
+}
+
+/* Foco visible para navegación por teclado (a11y, Fase 5) */
+:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+  border-radius: var(--radio-s);
+}
+
+/* — Utilidades — */
+
+.contenedor {
+  width: min(100% - 2 * var(--espacio-m), var(--ancho-contenido));
+  margin-inline: auto;
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Botones base: .boton = primario sólido, variantes por modificador */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-s);
+  padding: 0.7em 1.4em;
+  border: 2px solid transparent;
+  border-radius: var(--radio-pill);
+  background: var(--color-primario);
+  color: var(--color-texto-invertido);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    background: var(--color-primario-fuerte);
+    color: var(--color-texto-invertido);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.boton--secundario {
+    background: transparent;
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+
+    &:hover {
+      background: var(--color-primario-suave);
+      color: var(--color-primario-fuerte);
+    }
+  }
+
+  &.boton--whatsapp {
+    background: var(--color-whatsapp);
+
+    &:hover {
+      background: oklch(from var(--color-whatsapp) calc(l - 0.08) c h);
+    }
+  }
+}
+
+/* Animaciones respetuosas: quien pide menos movimiento, recibe menos */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

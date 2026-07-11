@@ -1,0 +1,49 @@
+---
+/** Catálogo de ropita: grilla responsive alimentada por la content collection. */
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PrendaCard from '../../components/PrendaCard.astro';
+
+const prendas = (await getCollection('prendas')).sort((a, b) => {
+  // Destacadas primero, agotadas al final
+  const puntaje = (p: typeof a) => (p.data.stock === 0 ? -1 : p.data.destacada ? 1 : 0);
+  return puntaje(b) - puntaje(a);
+});
+---
+
+<Base
+  titulo="Ropita para perros"
+  descripcion="Ropa de perro tejida a mano: chalecos de lana, polerones polares, impermeables y más. Prendas únicas hechas en Chile."
+>
+  <div class="contenedor">
+    <header class="encabezado">
+      <h1>Ropita de invierno</h1>
+      <p>
+        Cada prenda está hecha a mano, de a una. Si te gusta algo, ¡no lo
+        pienses tanto! — cuando se vende, no hay otra igual.
+      </p>
+    </header>
+
+    <div class="grilla">
+      {prendas.map((prenda) => <PrendaCard prenda={prenda} />)}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .encabezado {
+    padding-block: var(--espacio-xl) var(--espacio-l);
+    max-width: 60ch;
+
+    & p {
+      margin-block-start: var(--espacio-m);
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .grilla {
+    display: grid;
+    gap: var(--espacio-m);
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+</style>

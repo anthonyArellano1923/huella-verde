@@ -1,0 +1,164 @@
+---
+/**
+ * Página de detalle de una prenda. El botón "Lo quiero" abre WhatsApp con el
+ * mensaje pre-armado (v1 de venta según PLAN.md — la rama transbank agrega
+ * el pago online).
+ */
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import { formatCLP } from '../../utils/money';
+import { waLinkPrenda } from '../../utils/whatsapp';
+
+export async function getStaticPaths() {
+  const prendas = await getCollection('prendas');
+  return prendas.map((prenda) => ({
+    params: { slug: prenda.id },
+    props: { prenda },
+  }));
+}
+
+const { prenda } = Astro.props;
+const { nombre, descripcion, talla, precio, foto, fotoAlt, stock, temporada } = prenda.data;
+const { Content } = await render(prenda);
+const agotada = stock === 0;
+const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-año': 'Todo el año' }[temporada];
+---
+
+<Base titulo={nombre} descripcion={descripcion}>
+  <div class="contenedor detalle">
+    <nav aria-label="Miga de pan" class="miga">
+      <a href="/ropita/">← Volver al catálogo</a>
+    </nav>
+
+    <article>
+      <div class="foto">
+        <Image src={foto} alt={fotoAlt} width={800} height={800} loading="eager" />
+      </div>
+
+      <div class="info">
+        <h1>{nombre}</h1>
+        <p class="precio">{formatCLP(precio)}</p>
+        <dl class="datos">
+          <div>
+            <dt>Talla</dt>
+            <dd>{talla}</dd>
+          </div>
+          <div>
+            <dt>Temporada</dt>
+            <dd>{etiquetaTemporada}</dd>
+          </div>
+          <div>
+            <dt>Disponibles</dt>
+            <dd>{agotada ? 'Agotada 😢' : stock}</dd>
+          </div>
+        </dl>
+
+        <p>{descripcion}</p>
+
+        {
+          agotada ? (
+            <p class="aviso-agotada">
+              Esta prenda ya se vendió, pero Martha puede tejer algo parecido a
+              pedido. <a href={waLinkPrenda(nombre, talla, precio)} rel="noopener">Pregúntale por WhatsApp</a>.
+            </p>
+          ) : (
+            <>
+              <a class="boton boton--whatsapp" href={waLinkPrenda(nombre, talla, precio)} rel="noopener">
+                Lo quiero — coordinar por WhatsApp
+              </a>
+              <p class="nota-pago">
+                Se abre WhatsApp con el pedido listo para enviar. El pago se
+                coordina por transferencia y la entrega puede ser en la
+                peluquería o por encomienda.
+              </p>
+            </>
+          )
+        }
+
+        <div class="cuerpo">
+          <Content />
+        </div>
+      </div>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .detalle {
+    padding-block-start: var(--espacio-l);
+  }
+
+  .miga {
+    margin-block-end: var(--espacio-m);
+    font-size: var(--texto-s);
+  }
+
+  article {
+    display: grid;
+    gap: var(--espacio-l);
+
+    /* En pantallas anchas: foto e info lado a lado */
+    @media (width >= 48rem) {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .foto img {
+    width: 100%;
+    border-radius: var(--radio-m);
+    border: 1px solid var(--color-borde);
+  }
+
+  .precio {
+    font-size: var(--texto-xl);
+    font-weight: 700;
+    color: var(--color-primario-fuerte);
+    margin-block: var(--espacio-s) var(--espacio-m);
+  }
+
+  .datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-m) var(--espacio-l);
+    margin-block-end: var(--espacio-m);
+    padding: var(--espacio-m);
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m);
+
+    & dt {
+      font-size: var(--texto-s);
+      color: var(--color-texto-suave);
+    }
+
+    & dd {
+      margin: 0;
+      font-weight: 700;
+    }
+  }
+
+  .boton {
+    margin-block-start: var(--espacio-m);
+  }
+
+  .nota-pago {
+    margin-block-start: var(--espacio-s);
+    font-size: var(--texto-s);
+    color: var(--color-texto-suave);
+  }
+
+  .aviso-agotada {
+    margin-block-start: var(--espacio-m);
+    padding: var(--espacio-m);
+    border-inline-start: 4px solid var(--color-error);
+    background: var(--color-superficie);
+    border-radius: var(--radio-s);
+  }
+
+  .cuerpo {
+    margin-block-start: var(--espacio-l);
+    color: var(--color-texto-suave);
+  }
+</style>
