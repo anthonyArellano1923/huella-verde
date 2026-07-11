@@ -19,7 +19,7 @@ export async function getStaticPaths() {
 }
 
 const { prenda } = Astro.props;
-const { nombre, descripcion, talla, precio, foto, fotoAlt, stock, temporada } = prenda.data;
+const { nombre, descripcion, talla, precio, foto, fotoAlt, stock, temporada, linkMercadoPago } = prenda.data;
 const { Content } = await render(prenda);
 const agotada = stock === 0;
 const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-año': 'Todo el año' }[temporada];
@@ -64,13 +64,18 @@ const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-añ
             </p>
           ) : (
             <>
+              {linkMercadoPago && (
+                <a class="boton" href={linkMercadoPago} rel="noopener">
+                  Pagar online con MercadoPago
+                </a>
+              )}
               <a class="boton boton--whatsapp" href={waLinkPrenda(nombre, talla, precio)} rel="noopener">
                 Lo quiero — coordinar por WhatsApp
               </a>
               <p class="nota-pago">
-                Se abre WhatsApp con el pedido listo para enviar. El pago se
-                coordina por transferencia y la entrega puede ser en la
-                peluquería o por encomienda.
+                {linkMercadoPago
+                  ? 'Paga online al tiro, o coordina transferencia por WhatsApp — como te acomode. En ambos casos la entrega se coordina por WhatsApp.'
+                  : 'Se abre WhatsApp con el pedido listo para enviar. El pago se coordina por transferencia y la entrega puede ser en la peluquería o por encomienda.'}
               </p>
             </>
           )
@@ -141,6 +146,7 @@ const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-añ
 
   .boton {
     margin-block-start: var(--espacio-m);
+    margin-inline-end: var(--espacio-s);
   }
 
   .nota-pago {
