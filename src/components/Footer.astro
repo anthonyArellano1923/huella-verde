@@ -1,17 +1,19 @@
 ---
 import { NEGOCIO } from '../data/negocio';
 import { waLinkConsulta } from '../utils/whatsapp';
-import Planta from './Planta.astro';
+import IconoGrooming from './IconoGrooming.astro';
 
 const anio = new Date().getFullYear();
 ---
 
 <footer>
-  {/* Repisa de plantitas sobre el borde superior (eco de la vitrina del local) */}
-  <div class="repisa" aria-hidden="true">
-    <Planta tipo="maceta" size={56} />
-    <Planta tipo="maceta" size={44} />
-    <Planta tipo="maceta" size={50} />
+  {/* Rastro de huellitas cruzando el borde superior */}
+  <div class="rastro" aria-hidden="true">
+    {
+      Array.from({ length: 6 }).map((_, i) => (
+        <IconoGrooming tipo="huella" size={22} class:list={['huellita', { 'huellita--baja': i % 2 === 1 }]} />
+      ))
+    }
   </div>
 
   <div class="contenedor columnas">
@@ -64,20 +66,30 @@ const anio = new Date().getFullYear();
     color: var(--color-texto-suave);
   }
 
-  /* Maceteros "apoyados" sobre el borde superior del footer, como en una repisa */
-  .repisa {
+  /* Rastro de huellitas caminando sobre el borde superior del footer */
+  .rastro {
     position: absolute;
     inset-block-start: 0;
     inset-inline-end: var(--espacio-l);
     display: flex;
-    align-items: flex-end;
-    gap: var(--espacio-xs);
-    transform: translateY(-82%);
+    align-items: center;
+    gap: var(--espacio-s);
+    transform: translateY(-50%);
     pointer-events: none;
   }
 
+  .rastro :global(.huellita) {
+    color: var(--color-primario);
+    opacity: 0.5;
+    transform: rotate(-24deg);
+  }
+
+  .rastro :global(.huellita--baja) {
+    transform: translateY(35%) rotate(-24deg);
+  }
+
   @media (width < 34rem) {
-    .repisa {
+    .rastro {
       inset-inline: 0;
       justify-content: center;
     }
