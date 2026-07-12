@@ -3,6 +3,8 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import PrendaCard from '../components/PrendaCard.astro';
+import LogoHuellaVerde from '../components/LogoHuellaVerde.astro';
+import Planta from '../components/Planta.astro';
 import { NEGOCIO } from '../data/negocio';
 import { SERVICIOS } from '../data/servicios';
 import { formatCLP } from '../utils/money';
@@ -12,8 +14,11 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
 
 <Base titulo="Peluquería canina y ropita de perro" descripcion={NEGOCIO.descripcion}>
   <section class="hero">
-    <div class="contenedor">
-      <p class="saludo">🐾 Peluquería canina</p>
+    <Planta tipo="colgante" size={130} class="planta-hero planta-hero--izq" />
+    <Planta tipo="colgante" size={130} class="planta-hero planta-hero--der" />
+    <div class="contenedor hero__contenido">
+      <LogoHuellaVerde size={92} class="hero__emblema" title="Emblema de Huella Verde" />
+      <p class="saludo">Peluquería canina · {NEGOCIO.direccion.comuna}</p>
       <h1>Tu perrito, limpio, peinado y <em>abrigado</em></h1>
       <p class="bajada">
         Baño, corte y stripping con hora reservada online — sin llamadas ni esperas.
@@ -32,6 +37,11 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
       {
         SERVICIOS.map((s) => (
           <li>
+            <svg class="brote" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <path class="tallo" d="M12,22 V10" fill="none" stroke-width="2" stroke-linecap="round" />
+              <path d="M12,13 C7,13 4,10 4,5 C9,5 12,8 12,13 Z" />
+              <path d="M12,11 C12,7 15,4 20,4 C20,9 17,11 12,11 Z" />
+            </svg>
             <h3>{s.nombre}</h3>
             <p>{s.descripcion}</p>
             <p class="desde">
@@ -41,6 +51,13 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
                 <>Precio a consultar</>
               )}
             </p>
+            <svg class="huella-marca" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="50" cy="60" rx="17" ry="14" />
+              <ellipse cx="30" cy="44" rx="6" ry="9" transform="rotate(-18 30 44)" />
+              <ellipse cx="43" cy="34" rx="6" ry="9" transform="rotate(-6 43 34)" />
+              <ellipse cx="57" cy="34" rx="6" ry="9" transform="rotate(6 57 34)" />
+              <ellipse cx="70" cy="44" rx="6" ry="9" transform="rotate(18 70 44)" />
+            </svg>
           </li>
         ))
       }
@@ -70,13 +87,48 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
 
 <style>
   .hero {
+    position: relative;
+    overflow: hidden;
     padding-block: var(--espacio-2xl);
-    background: linear-gradient(180deg, var(--color-primario-suave), var(--color-fondo));
+    background:
+      radial-gradient(120% 80% at 50% -10%, var(--color-primario-suave), transparent 60%),
+      linear-gradient(180deg, var(--color-primario-suave), var(--color-fondo));
     text-align: center;
+  }
+
+  /* Plantas colgantes en las esquinas altas del hero (como la vitrina del
+     local). Decorativas, cuelgan desde el borde superior. */
+  .hero :global(.planta-hero) {
+    position: absolute;
+    inset-block-start: -0.5rem;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .hero :global(.planta-hero--izq) {
+    inset-inline-start: 2%;
+  }
+
+  .hero :global(.planta-hero--der) {
+    inset-inline-end: 2%;
+    transform: scaleX(-1);
+  }
+
+  .hero__contenido {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero :global(.hero__emblema) {
+    margin-inline: auto;
+    margin-block-end: var(--espacio-m);
   }
 
   .saludo {
     font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-size: var(--texto-s);
     color: var(--color-primario-fuerte);
   }
 
@@ -88,6 +140,13 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     & em {
       font-style: normal;
       color: var(--color-primario-fuerte);
+    }
+  }
+
+  /* En pantallas chicas las plantas estorban el texto: se ocultan */
+  @media (width < 46rem) {
+    .hero :global(.planta-hero) {
+      display: none;
     }
   }
 
@@ -122,11 +181,31 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     list-style: none;
 
     & li {
+      position: relative;
+      overflow: hidden;
       padding: var(--espacio-l);
+      padding-block-start: var(--espacio-xl);
       background: var(--color-superficie);
       border: 1px solid var(--color-borde);
-      border-radius: var(--radio-m);
+      /* Esquina orgánica: rompe la caja perfecta sin dejar de ser prolija */
+      border-radius: var(--radio-m) var(--radio-m) var(--radio-m) calc(var(--radio-m) * 2.4);
       box-shadow: var(--sombra-tarjeta);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    /* Cinta de acento verde en el borde superior */
+    & li::before {
+      content: '';
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline: 0;
+      block-size: 5px;
+      background: linear-gradient(90deg, var(--color-primario), var(--color-acento));
+    }
+
+    & li:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 22px oklch(0.4 0.06 155 / 0.14);
     }
 
     & h3 {
@@ -142,6 +221,30 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
       margin-block-start: var(--espacio-s);
       color: var(--color-texto);
     }
+  }
+
+  /* Brote decorativo sobre el título de cada servicio */
+  .brote {
+    inline-size: 26px;
+    block-size: 26px;
+    margin-block-end: var(--espacio-xs);
+    fill: var(--color-primario);
+  }
+
+  .brote .tallo {
+    stroke: var(--color-primario);
+  }
+
+  /* Huella de agua tenue en la esquina de la tarjeta */
+  .huella-marca {
+    position: absolute;
+    inset-block-end: -0.6rem;
+    inset-inline-end: -0.6rem;
+    inline-size: 5.5rem;
+    block-size: 5.5rem;
+    fill: var(--color-primario);
+    opacity: 0.06;
+    pointer-events: none;
   }
 
   .grilla-prendas {

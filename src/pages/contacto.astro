@@ -23,7 +23,7 @@ const consultaMapa = encodeURIComponent(
     </header>
 
     <div class="tarjetas">
-      <section>
+      <section class="tarjeta-org tarjeta-org--acento">
         <h2>Dónde estamos</h2>
         <p>
           {NEGOCIO.direccion.calle}<br />
@@ -36,7 +36,7 @@ const consultaMapa = encodeURIComponent(
         </p>
       </section>
 
-      <section>
+      <section class="tarjeta-org tarjeta-org--acento">
         <h2>Horarios</h2>
         <ul>
           {
@@ -49,7 +49,7 @@ const consultaMapa = encodeURIComponent(
         </ul>
       </section>
 
-      <section>
+      <section class="tarjeta-org tarjeta-org--acento">
         <h2>Correo</h2>
         <p>
           <a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a>
@@ -78,9 +78,7 @@ const consultaMapa = encodeURIComponent(
 
     & section {
       padding: var(--espacio-l);
-      background: var(--color-superficie);
-      border: 1px solid var(--color-borde);
-      border-radius: var(--radio-m);
+      padding-block-start: var(--espacio-xl);
     }
 
     & h2 {

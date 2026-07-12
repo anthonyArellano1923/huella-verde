@@ -5,6 +5,7 @@
  */
 import { NEGOCIO } from '../data/negocio';
 import CarritoBadge from './react/CarritoBadge';
+import LogoHuellaVerde from './LogoHuellaVerde.astro';
 
 const enlaces = [
   { href: '/', texto: 'Inicio' },
@@ -22,7 +23,7 @@ const esActual = (href: string) =>
 <header>
   <div class="contenedor barra">
     <a class="marca" href="/">
-      <span class="marca__huella" aria-hidden="true">🐾</span>
+      <LogoHuellaVerde size={40} class="marca__emblema" />
       <span class="marca__nombre">{NEGOCIO.nombre}</span>
     </a>
     <nav aria-label="Navegación principal">
@@ -71,8 +72,13 @@ const esActual = (href: string) =>
     text-decoration: none;
   }
 
-  .marca__huella {
-    font-size: 1.2em;
+  .marca :global(.marca__emblema) {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+
+  .marca:hover :global(.marca__emblema) {
+    transform: rotate(-8deg);
   }
 
   /* Como ítem flex, nav no puede encogerse bajo su contenido por defecto
