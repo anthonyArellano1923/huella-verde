@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import PrendaCard from '../components/PrendaCard.astro';
 import LogoHuellaVerde from '../components/LogoHuellaVerde.astro';
-import Planta from '../components/Planta.astro';
+import IconoGrooming from '../components/IconoGrooming.astro';
 import { NEGOCIO } from '../data/negocio';
 import { SERVICIOS } from '../data/servicios';
 import { formatCLP } from '../utils/money';
@@ -14,8 +14,8 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
 
 <Base titulo="Peluquería canina y ropita de perro" descripcion={NEGOCIO.descripcion}>
   <section class="hero">
-    <Planta tipo="colgante" size={130} class="planta-hero planta-hero--izq" />
-    <Planta tipo="colgante" size={130} class="planta-hero planta-hero--der" />
+    <IconoGrooming tipo="tijeras" size={116} class="deco-hero deco-hero--izq" />
+    <IconoGrooming tipo="peine" size={116} class="deco-hero deco-hero--der" />
     <div class="contenedor hero__contenido">
       <LogoHuellaVerde size={92} class="hero__emblema" title="Emblema de Huella Verde" />
       <p class="saludo">Peluquería canina · {NEGOCIO.direccion.comuna}</p>
@@ -37,11 +37,7 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
       {
         SERVICIOS.map((s) => (
           <li>
-            <svg class="brote" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-              <path class="tallo" d="M12,22 V10" fill="none" stroke-width="2" stroke-linecap="round" />
-              <path d="M12,13 C7,13 4,10 4,5 C9,5 12,8 12,13 Z" />
-              <path d="M12,11 C12,7 15,4 20,4 C20,9 17,11 12,11 Z" />
-            </svg>
+            <IconoGrooming tipo={s.icono} size={30} class="icono-servicio" />
             <h3>{s.nombre}</h3>
             <p>{s.descripcion}</p>
             <p class="desde">
@@ -96,22 +92,23 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     text-align: center;
   }
 
-  /* Plantas colgantes en las esquinas altas del hero (como la vitrina del
-     local). Decorativas, cuelgan desde el borde superior. */
-  .hero :global(.planta-hero) {
+  /* Herramientas de grooming decorando el hero: tijeras y peine, sutiles. */
+  .hero :global(.deco-hero) {
     position: absolute;
-    inset-block-start: -0.5rem;
-    opacity: 0.9;
+    inset-block-start: 12%;
+    color: var(--color-primario);
+    opacity: 0.16;
     pointer-events: none;
   }
 
-  .hero :global(.planta-hero--izq) {
-    inset-inline-start: 2%;
+  .hero :global(.deco-hero--izq) {
+    inset-inline-start: 4%;
+    transform: rotate(-16deg);
   }
 
-  .hero :global(.planta-hero--der) {
-    inset-inline-end: 2%;
-    transform: scaleX(-1);
+  .hero :global(.deco-hero--der) {
+    inset-inline-end: 4%;
+    transform: rotate(12deg);
   }
 
   .hero__contenido {
@@ -143,9 +140,9 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     }
   }
 
-  /* En pantallas chicas las plantas estorban el texto: se ocultan */
+  /* En pantallas chicas las herramientas estorban el texto: se ocultan */
   @media (width < 46rem) {
-    .hero :global(.planta-hero) {
+    .hero :global(.deco-hero) {
       display: none;
     }
   }
@@ -223,16 +220,10 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     }
   }
 
-  /* Brote decorativo sobre el título de cada servicio */
-  .brote {
-    inline-size: 26px;
-    block-size: 26px;
+  /* Ícono de grooming sobre el título de cada servicio */
+  .servicios :global(.icono-servicio) {
     margin-block-end: var(--espacio-xs);
-    fill: var(--color-primario);
-  }
-
-  .brote .tallo {
-    stroke: var(--color-primario);
+    color: var(--color-primario);
   }
 
   /* Huella de agua tenue en la esquina de la tarjeta */

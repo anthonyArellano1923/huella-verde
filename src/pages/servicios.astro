@@ -2,6 +2,7 @@
 /** Página de servicios: detalle de cada uno + tabla de precios por tamaño. */
 import Base from '../layouts/Base.astro';
 import TablaPrecios from '../components/TablaPrecios.astro';
+import IconoGrooming from '../components/IconoGrooming.astro';
 import { SERVICIOS, TAMANOS } from '../data/servicios';
 ---
 
@@ -34,11 +35,7 @@ import { SERVICIOS, TAMANOS } from '../data/servicios';
       {
         SERVICIOS.map((s) => (
           <article id={s.id} class="tarjeta-org tarjeta-org--acento">
-            <svg class="brote" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-              <path class="tallo" d="M12,22 V10" fill="none" stroke-width="2" stroke-linecap="round" />
-              <path d="M12,13 C7,13 4,10 4,5 C9,5 12,8 12,13 Z" />
-              <path d="M12,11 C12,7 15,4 20,4 C20,9 17,11 12,11 Z" />
-            </svg>
+            <IconoGrooming tipo={s.icono} size={30} class="icono-servicio" />
             <h2>{s.nombre}</h2>
             <p>{s.descripcion}</p>
             <h3>Incluye</h3>
@@ -96,14 +93,8 @@ import { SERVICIOS, TAMANOS } from '../data/servicios';
     }
   }
 
-  .brote {
-    inline-size: 26px;
-    block-size: 26px;
+  .detalle :global(.icono-servicio) {
     margin-block-end: var(--espacio-xs);
-    fill: var(--color-primario);
-  }
-
-  .brote .tallo {
-    stroke: var(--color-primario);
+    color: var(--color-primario);
   }
 </style>
