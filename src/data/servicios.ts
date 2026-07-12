@@ -46,7 +46,12 @@ export interface Servicio {
    * inicio máximo 17:30) y ajustar los slugs si difieren.
    */
   calcomSlug: string;
+  /** Ícono de grooming que representa el servicio (ver IconoGrooming.astro). */
+  icono: IconoGrooming;
 }
+
+/** Íconos de peluquería canina disponibles. */
+export type IconoGrooming = 'gota' | 'tijeras' | 'peine' | 'cepillo';
 
 export const SERVICIOS: Servicio[] = [
   {
@@ -63,6 +68,7 @@ export const SERVICIOS: Servicio[] = [
     ],
     precioDesdePorTamano: { pequeno: 22000, mediano: 28000, grande: 32000 },
     calcomSlug: 'bano',
+    icono: 'gota',
   },
   {
     id: 'mantencion-corte',
@@ -71,6 +77,7 @@ export const SERVICIOS: Servicio[] = [
     incluye: ['Todo lo del baño completo', 'Corte según raza o a pedido', 'Higiénico (patitas, carita, zona sanitaria)'],
     precioDesdePorTamano: { pequeno: 25000, mediano: 30000, grande: 40000 },
     calcomSlug: 'mantencion-y-corte',
+    icono: 'tijeras',
   },
   {
     id: 'stripping',
@@ -79,6 +86,7 @@ export const SERVICIOS: Servicio[] = [
     incluye: ['Stripping manual completo', 'Baño posterior', 'Cepillado y perfume'],
     precioDesdePorTamano: null,
     calcomSlug: 'stripping',
+    icono: 'peine',
   },
   {
     id: 'deslanado',
@@ -87,6 +95,7 @@ export const SERVICIOS: Servicio[] = [
     incluye: ['Baño con acondicionador', 'Deslanado con herramientas específicas', 'Secado profundo'],
     precioDesdePorTamano: null,
     calcomSlug: 'deslanado',
+    icono: 'cepillo',
   },
 ];
 
