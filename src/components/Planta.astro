@@ -1,0 +1,141 @@
+---
+/**
+ * Plantita decorativa (SVG vectorial) para reforzar el verde de la marca —
+ * eco de las plantas que Martha tiene en la vitrina del local. Es SOLO
+ * decoración de marca (aria-hidden); esta sigue siendo una web de mascotas.
+ *
+ * `tipo`:
+ *  - 'maceta'   → planta en macetero (para repisas / esquinas)
+ *  - 'colgante' → planta colgante con enredaderas (para esquinas altas)
+ *
+ * Hojas heredan `currentColor` (verde marca); el macetero usa el acento.
+ */
+interface Props {
+  tipo?: 'maceta' | 'colgante';
+  size?: number;
+  class?: string;
+}
+const { tipo = 'maceta', size = 120, class: clase = '' } = Astro.props;
+
+// Hojas del follaje: ángulo, largo del tallo y escala de la hoja.
+const follaje = [
+  { a: 0, l: 6, s: 1.15 },
+  { a: -26, l: 10, s: 1 },
+  { a: 26, l: 10, s: 1 },
+  { a: -48, l: 16, s: 0.85 },
+  { a: 48, l: 16, s: 0.85 },
+  { a: -70, l: 22, s: 0.7 },
+  { a: 70, l: 22, s: 0.7 },
+];
+---
+
+<svg
+  viewBox="0 0 120 170"
+  width={size}
+  height={size * (170 / 120)}
+  class:list={['planta', `planta--${tipo}`, clase]}
+  aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  {
+    tipo === 'maceta' && (
+      <>
+        {/* Follaje que sale del macetero */}
+        <g class="hojas" transform="translate(60 116)">
+          {follaje.map(({ a, l, s }) => (
+            <g transform={`rotate(${a}) translate(0 ${-l}) scale(${s})`}>
+              <path d="M0,0 C11,-7 13,-30 0,-46 C-13,-30 -11,-7 0,0 Z" />
+              <path class="vena" d="M0,-4 L0,-40" />
+            </g>
+          ))}
+        </g>
+        {/* Macetero */}
+        <g class="maceta">
+          <rect x="30" y="112" width="60" height="13" rx="3" />
+          <path d="M35,125 L85,125 L78,160 Q60,165 42,160 Z" />
+        </g>
+      </>
+    )
+  }
+
+  {
+    tipo === 'colgante' && (
+      <>
+        {/* Cuelgue */}
+        <g class="cuelgue">
+          <path d="M60,6 L40,44" />
+          <path d="M60,6 L80,44" />
+          <path d="M60,6 L60,42" />
+          <circle cx="60" cy="6" r="3.4" />
+        </g>
+        {/* Macetero colgante */}
+        <g class="maceta">
+          <rect x="38" y="42" width="44" height="10" rx="2.5" />
+          <path d="M42,52 L78,52 L72,72 L48,72 Z" />
+        </g>
+        {/* Follaje que asoma arriba */}
+        <g class="hojas" transform="translate(60 46)">
+          {[-30, 0, 30].map((a) => (
+            <g transform={`rotate(${a}) translate(0 -6) scale(0.62)`}>
+              <path d="M0,0 C11,-7 13,-30 0,-46 C-13,-30 -11,-7 0,0 Z" />
+            </g>
+          ))}
+        </g>
+        {/* Enredaderas que caen */}
+        <g class="enredaderas">
+          <path d="M50,70 C44,95 54,116 47,150" />
+          <path d="M60,72 C64,100 55,126 61,158" />
+          <path d="M70,70 C76,96 67,120 72,148" />
+        </g>
+        <g class="hojitas">
+          {[
+            [46, 104],
+            [52, 132],
+            [58, 96],
+            [63, 140],
+            [69, 108],
+            [71, 132],
+          ].map(([cx, cy]) => (
+            <ellipse cx={cx} cy={cy} rx="4.6" ry="7" transform={`rotate(${cx > 60 ? 24 : -24} ${cx} ${cy})`} />
+          ))}
+        </g>
+      </>
+    )
+  }
+</svg>
+
+<style>
+  .planta {
+    color: var(--color-primario);
+  }
+  .hojas path,
+  .hojitas ellipse {
+    fill: currentColor;
+  }
+  .hojas .vena {
+    fill: none;
+    stroke: var(--color-superficie);
+    stroke-width: 1.4;
+    opacity: 0.45;
+  }
+  .maceta rect,
+  .maceta path {
+    fill: var(--color-acento);
+  }
+  .cuelgue path {
+    stroke: var(--color-texto-suave);
+    stroke-width: 1.5;
+    fill: none;
+    opacity: 0.6;
+  }
+  .cuelgue circle {
+    fill: var(--color-texto-suave);
+    opacity: 0.6;
+  }
+  .enredaderas path {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+  }
+</style>

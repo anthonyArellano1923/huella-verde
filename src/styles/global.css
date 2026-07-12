@@ -136,6 +136,59 @@ button {
   }
 }
 
+/* — Tarjeta orgánica: la "caja con carácter" de Huella Verde —
+   Esquina inferior-izquierda más redonda (rompe el rectángulo perfecto),
+   opcional cinta de acento arriba y elevación al pasar el mouse. */
+.tarjeta-org {
+  position: relative;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-m) var(--radio-m) var(--radio-m) calc(var(--radio-m) * 2.4);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.tarjeta-org--acento {
+  overflow: hidden;
+}
+
+.tarjeta-org--acento::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 5px;
+  background: linear-gradient(90deg, var(--color-primario), var(--color-acento));
+}
+
+.tarjeta-org--hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tarjeta-org--hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 22px oklch(0.4 0.06 155 / 0.14);
+}
+
+/* Sello "hecho a mano" para la ropita tejida por Martha */
+.sello-hechoamano {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.25em 0.7em;
+  border-radius: var(--radio-pill);
+  background: var(--color-acento-suave);
+  color: var(--color-acento-fuerte);
+  font-size: var(--texto-s);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.sello-hechoamano svg {
+  inline-size: 1em;
+  block-size: 1em;
+  fill: currentColor;
+}
+
 /* Animaciones respetuosas: quien pide menos movimiento, recibe menos */
 @media (prefers-reduced-motion: reduce) {
   html {

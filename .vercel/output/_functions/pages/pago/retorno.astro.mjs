@@ -1,6 +1,6 @@
 import { d as createAstro, c as createComponent, r as renderComponent, e as renderScript, a as renderTemplate, m as maybeRenderHead, F as Fragment, b as addAttribute } from '../../chunks/astro/server_ChiqBPSF.mjs';
 import 'piccolore';
-import { b as waLink, N as NEGOCIO, f as formatCLP, $ as $$Base } from '../../chunks/Base_oYyVqb27.mjs';
+import { e as waLink, N as NEGOCIO, f as formatCLP, $ as $$Base } from '../../chunks/Base_CA8M8QTQ.mjs';
 import { w as webpayTransaction } from '../../chunks/transbank_7U-WXAui.mjs';
 /* empty css                                      */
 export { renderers } from '../../renderers.mjs';

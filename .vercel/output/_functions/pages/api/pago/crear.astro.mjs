@@ -1,4 +1,4 @@
-import { g as getCollection } from '../../../chunks/_astro_content_CUCq9TDn.mjs';
+import { g as getCollection } from '../../../chunks/_astro_content_ThJ4rWS9.mjs';
 import { g as getServicio, a as getTamano } from '../../../chunks/servicios_ZJ9ChDSN.mjs';
 import { g as generarBuyOrder, w as webpayTransaction } from '../../../chunks/transbank_7U-WXAui.mjs';
 export { renderers } from '../../../renderers.mjs';
