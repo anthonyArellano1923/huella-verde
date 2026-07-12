@@ -1,11 +1,19 @@
 ---
 import { NEGOCIO } from '../data/negocio';
 import { waLinkConsulta } from '../utils/whatsapp';
+import Planta from './Planta.astro';
 
 const anio = new Date().getFullYear();
 ---
 
 <footer>
+  {/* Repisa de plantitas sobre el borde superior (eco de la vitrina del local) */}
+  <div class="repisa" aria-hidden="true">
+    <Planta tipo="maceta" size={56} />
+    <Planta tipo="maceta" size={44} />
+    <Planta tipo="maceta" size={50} />
+  </div>
+
   <div class="contenedor columnas">
     <section>
       <h2>{NEGOCIO.nombre}</h2>
@@ -47,12 +55,32 @@ const anio = new Date().getFullYear();
 
 <style>
   footer {
+    position: relative;
     margin-block-start: var(--espacio-2xl);
     padding-block: var(--espacio-xl) var(--espacio-l);
     background: var(--color-superficie);
     border-block-start: 1px solid var(--color-borde);
     font-size: var(--texto-s);
     color: var(--color-texto-suave);
+  }
+
+  /* Maceteros "apoyados" sobre el borde superior del footer, como en una repisa */
+  .repisa {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: var(--espacio-l);
+    display: flex;
+    align-items: flex-end;
+    gap: var(--espacio-xs);
+    transform: translateY(-82%);
+    pointer-events: none;
+  }
+
+  @media (width < 34rem) {
+    .repisa {
+      inset-inline: 0;
+      justify-content: center;
+    }
   }
 
   .columnas {

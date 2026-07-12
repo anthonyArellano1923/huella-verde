@@ -1,0 +1,103 @@
+---
+/**
+ * Emblema de marca de Huella Verde: una huella de perro dentro de una corona
+ * de hojas, con florcitas en el color acento — inspirado en los diseños que
+ * hizo Martha. SVG vectorial: nítido a cualquier tamaño, se adapta a
+ * claro/oscuro (las hojas y la huella heredan `currentColor`).
+ *
+ * TODO(Anthony): reemplazable por el logo oficial de Martha cuando lo tengas
+ * (basta cambiar este archivo; se usa en el header y el hero).
+ */
+interface Props {
+  /** Tamaño en píxeles (cuadrado). */
+  size?: number;
+  /** Texto accesible; si es decorativo (hay texto al lado), dejar vacío. */
+  title?: string;
+  class?: string;
+}
+
+const { size = 48, title = '', class: clase = '' } = Astro.props;
+
+// Hojas repartidas en la corona; el hueco de arriba lo llenan las flores.
+const anguloHojas = [40, 65, 90, 115, 140, 165, 195, 220, 245, 270, 295, 320];
+// 3 florcitas coronando el emblema (arriba al centro).
+const anguloFlores = [0, 22, 338];
+---
+
+<svg
+  viewBox="0 0 100 100"
+  width={size}
+  height={size}
+  class:list={['logo-hv', clase]}
+  role={title ? 'img' : 'presentation'}
+  aria-label={title || undefined}
+  aria-hidden={title ? undefined : 'true'}
+  xmlns="http://www.w3.org/2000/svg"
+>
+  {title && <title>{title}</title>}
+
+  {/* Corona de hojas (base a radio 31, punta a radio ~46: caben en el viewBox) */}
+  <g class="hojas">
+    {
+      anguloHojas.map((a) => (
+        <g transform={`rotate(${a} 50 50) translate(50 19)`}>
+          <path d="M0,0 C4.5,-3 4.5,-11 0,-15 C-4.5,-11 -4.5,-3 0,0 Z" />
+          <path class="vena" d="M0,-2 L0,-12.5" />
+        </g>
+      ))
+    }
+  </g>
+
+  {/* Florcitas del acento coronando el emblema */}
+  <g class="flores">
+    {
+      anguloFlores.map((a) => (
+        <g transform={`rotate(${a} 50 50) translate(50 16)`}>
+          {[0, 72, 144, 216, 288].map((p) => (
+            <circle cx="0" cy="-2.6" r="2.1" transform={`rotate(${p} 0 0)`} />
+          ))}
+          <circle class="centro-flor" cx="0" cy="0" r="1.7" />
+        </g>
+      ))
+    }
+  </g>
+
+  {/* Huella al centro: almohadilla + 4 deditos */}
+  <g class="huella">
+    <ellipse cx="50" cy="56" rx="8" ry="6.6" />
+    <ellipse cx="41" cy="47" rx="2.7" ry="3.7" transform="rotate(-18 41 47)" />
+    <ellipse cx="47" cy="43" rx="2.7" ry="3.9" transform="rotate(-6 47 43)" />
+    <ellipse cx="53" cy="43" rx="2.7" ry="3.9" transform="rotate(6 53 43)" />
+    <ellipse cx="59" cy="47" rx="2.7" ry="3.7" transform="rotate(18 59 47)" />
+  </g>
+</svg>
+
+<style>
+  .logo-hv {
+    display: block;
+    color: var(--color-primario);
+  }
+
+  .hojas path {
+    fill: currentColor;
+  }
+
+  .hojas .vena {
+    fill: none;
+    stroke: var(--color-superficie);
+    stroke-width: 1.1;
+    opacity: 0.5;
+  }
+
+  .huella {
+    fill: currentColor;
+  }
+
+  .flores circle {
+    fill: var(--color-acento);
+  }
+
+  .flores .centro-flor {
+    fill: var(--color-primario-suave);
+  }
+</style>
