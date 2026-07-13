@@ -1,7 +1,8 @@
 /**
  * Isla React: contenido de la página /carrito — lista editable + botón de
  * pago. Al pagar, envía SOLO slugs y cantidades a /api/pago/crear; el
- * servidor recalcula el total real y responde con la URL de Webpay.
+ * servidor recalcula el total real y responde con la URL de la pasarela
+ * activa (Webpay o MercadoPago, según PASARELA_PAGO en el servidor).
  */
 import { useState } from 'react';
 import { useStore } from '@nanostores/react';
@@ -37,8 +38,7 @@ export default function CarritoLista() {
       });
       const datos = await res.json();
       if (!res.ok) throw new Error(datos.error ?? 'No se pudo iniciar el pago.');
-      // Redirección a Webpay: el formulario de pago vive en transbank.cl
-      window.location.href = `${datos.url}?token_ws=${datos.token}`;
+      window.location.href = datos.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error inesperado. Intenta de nuevo.');
       setEnviando(false);
@@ -79,11 +79,11 @@ export default function CarritoLista() {
       )}
 
       <button className="boton" type="button" disabled={enviando} onClick={pagar}>
-        {enviando ? 'Conectando con Webpay…' : 'Pagar con Webpay (Transbank)'}
+        {enviando ? 'Conectando con el pago seguro…' : 'Pagar ahora (pago seguro)'}
       </button>
       <p className="carrito__nota">
-        Pago seguro procesado por Transbank. Se aceptan tarjetas de débito,
-        crédito y prepago chilenas.
+        Pago seguro online. Se aceptan tarjetas de débito, crédito y prepago
+        chilenas.
       </p>
     </div>
   );

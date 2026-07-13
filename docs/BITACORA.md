@@ -110,3 +110,35 @@ Auditoría Lighthouse móvil sobre el build de producción, las 6 páginas:
    express → ahora h2.
 Dark mode verificado visualmente en móvil. MercadoPago agregado: links v1
 en main + rama `mercadopago` (Checkout Pro) — ver entrada anterior.
+
+## 2026-07-13 · Claude (unificación de pasarelas: rama `pagos`)
+
+A pedido de Anthony, unificadas las ramas `transbank` y `mercadopago` (que
+implementaban el mismo negocio con distinta pasarela) en una rama nueva
+`pagos`, salida de `transbank` — no se hizo `git merge` entre ambas porque
+cada archivo de pago existía en las dos con contenido distinto y un merge
+habría producido conflicto en los 13 archivos afectados sin forma limpia de
+revisarlo.
+
+**Arquitectura (ADR-008 en `docs/DECISIONES.md`):** interfaz `PasarelaPago`
+en `src/lib/pasarela.ts` (tipos `SolicitudPago`/`RespuestaPago`/
+`ResultadoRetorno`, `generarReferencia()` unificado cortado a 26 chars,
+`getPasarela()` como fábrica). Dos implementaciones en `src/lib/pasarelas/`
+(`webpay.ts`, `mercadopago.ts`), cada una con `crearPago` y
+`verificarRetorno`. Pasarela activa por env var `PASARELA_PAGO`
+(`webpay` por defecto — funciona sin credenciales; `mercadopago` requiere
+`MP_ACCESS_TOKEN`).
+
+`src/pages/api/pago/crear.ts` reescrito agnóstico de pasarela (responde
+siempre `{ url }`, nunca token suelto). `src/pages/pago/retorno.astro`
+reescrito como página única que despacha a `verificarRetorno()` y unifica
+los 6 estados posibles (aprobado/pendiente/rechazado/anulado/invalido/error)
+sin duplicar UI. `webhook.ts` (solo aplica a MP) gana una guarda que
+responde 200 sin tocar el SDK si la pasarela activa no es MercadoPago.
+Textos de UI (`CarritoLista.tsx`, `reservar.astro`, `ropita/[slug].astro`)
+pasan de "Pagar con Webpay/MercadoPago" a textos neutros, porque el botón no
+sabe en build cuál pasarela corre en runtime. `package.json` con ambos SDK
+(`transbank-sdk` + `mercadopago`), `.env.example` documentando las tres
+variables. Planificado por el agente `arquitecto`, ejecutado en el hilo
+principal. Build y pruebas end-to-end pendientes de verificar en esta
+entrada (ver siguiente).

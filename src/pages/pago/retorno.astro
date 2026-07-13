@@ -1,64 +1,31 @@
 ---
 /**
- * Página de retorno de Webpay (prerender = false: corre en el servidor en
- * cada visita, porque debe CONFIRMAR la transacción con Transbank).
+ * Página de retorno de pagos (prerender = false: corre en el servidor en
+ * cada visita, porque debe VERIFICAR el pago con la pasarela real, nunca
+ * confiar en los query params que trae el navegador).
  *
- * Flujos posibles según lo que manda Webpay:
- * - `token_ws` presente → el cliente terminó el formulario de pago; hay que
- *   hacer commit() DEL LADO DEL SERVIDOR para saber si fue autorizado o
- *   rechazado. Sin commit, el pago queda en el limbo y se reversa solo.
- * - `TBK_TOKEN` presente → el cliente anuló dentro de Webpay.
- * - Nada → alguien entró directo a la URL.
+ * Es una sola página para las dos pasarelas: le pregunta a la pasarela
+ * ACTIVA (según PASARELA_PAGO) "¿cómo quedó este pago?" y pinta un
+ * resultado normalizado. Cada pasarela solo produce sus propios estados
+ * (Webpay nunca vuelve "pendiente"; MercadoPago nunca vuelve "anulado"),
+ * así que los bloques que no aplican simplemente no se muestran.
  */
 import Base from '../../layouts/Base.astro';
 import { NEGOCIO } from '../../data/negocio';
 import { formatCLP } from '../../utils/money';
 import { waLink } from '../../utils/whatsapp';
-import { webpayTransaction } from '../../lib/transbank';
+import { getPasarela, type EstadoPago } from '../../lib/pasarela';
 
 export const prerender = false;
 
-// Webpay puede volver por GET o por POST según el flujo: se revisan ambos.
-const params =
-  Astro.request.method === 'POST'
-    ? new URLSearchParams(await Astro.request.text())
-    : Astro.url.searchParams;
+const pasarela = getPasarela();
+const { estado, detalle } = await pasarela.verificarRetorno(Astro.request, Astro.url);
 
-const tokenWs = params.get('token_ws');
-const tokenAnulacion = params.get('TBK_TOKEN');
-
-type Estado = 'aprobado' | 'rechazado' | 'anulado' | 'invalido' | 'error';
-let estado: Estado = 'invalido';
-let detalle: { buyOrder: string; monto: number; tarjeta: string; codigoAutorizacion: string } | null = null;
-
-if (tokenWs) {
-  try {
-    const tx = webpayTransaction();
-    const r = await tx.commit(tokenWs);
-    if (r.response_code === 0 && r.status === 'AUTHORIZED') {
-      estado = 'aprobado';
-      detalle = {
-        buyOrder: r.buy_order,
-        monto: r.amount,
-        tarjeta: r.card_detail?.card_number ?? '****',
-        codigoAutorizacion: r.authorization_code,
-      };
-    } else {
-      estado = 'rechazado';
-    }
-  } catch (err) {
-    console.error('Error confirmando transacción Webpay:', err);
-    estado = 'error';
-  }
-} else if (tokenAnulacion) {
-  estado = 'anulado';
-}
-
-const esReserva = detalle?.buyOrder.includes('-RS-') ?? false;
+const esReserva = detalle?.referencia.includes('-RS-') ?? false;
 const waComprobante = detalle
   ? waLink(
-      `¡Hola! Acabo de pagar con Webpay en la web de ${NEGOCIO.nombre}.\n` +
-        `Orden: ${detalle.buyOrder}\n` +
+      `¡Hola! Acabo de pagar con ${pasarela.nombre} en la web de ${NEGOCIO.nombre}.\n` +
+        `Referencia: ${detalle.referencia}\n` +
         `Monto: ${formatCLP(detalle.monto)}\n` +
         (esReserva
           ? 'Es el pago de una reserva — te confirmo la hora que agendé.'
@@ -66,8 +33,9 @@ const waComprobante = detalle
     )
   : '';
 
-const titulos: Record<Estado, string> = {
+const titulos: Record<EstadoPago, string> = {
   aprobado: '¡Pago aprobado! 🎉',
+  pendiente: 'Pago en proceso',
   rechazado: 'Pago rechazado',
   anulado: 'Pago anulado',
   invalido: 'Página de retorno de pagos',
@@ -75,38 +43,46 @@ const titulos: Record<Estado, string> = {
 };
 ---
 
-<Base titulo={titulos[estado]} descripcion="Resultado de tu pago con Webpay.">
+<Base titulo={titulos[estado]} descripcion={`Resultado de tu pago con ${pasarela.nombre}.`}>
   <div class="contenedor resultado">
     <h1>{titulos[estado]}</h1>
 
     {
-      estado === 'aprobado' && detalle && (
+      (estado === 'aprobado' || estado === 'pendiente') && detalle && (
         <>
-          <dl class="voucher">
+          <dl class:list={['voucher', { pendiente: estado === 'pendiente' }]}>
             <div>
-              <dt>Orden de compra</dt>
-              <dd>{detalle.buyOrder}</dd>
+              <dt>Referencia</dt>
+              <dd>{detalle.referencia}</dd>
             </div>
             <div>
-              <dt>Monto pagado</dt>
+              <dt>Monto</dt>
               <dd>{formatCLP(detalle.monto)}</dd>
             </div>
             <div>
-              <dt>Tarjeta</dt>
-              <dd>**** {detalle.tarjeta.slice(-4)}</dd>
+              <dt>Medio de pago</dt>
+              <dd>{detalle.medio}</dd>
             </div>
             <div>
-              <dt>Código de autorización</dt>
-              <dd>{detalle.codigoAutorizacion}</dd>
+              <dt>Comprobante</dt>
+              <dd>{detalle.comprobante}</dd>
             </div>
           </dl>
+
+          {estado === 'pendiente' && (
+            <p class="nota-pendiente">
+              Tu pago está en proceso (por ejemplo, pago en efectivo o
+              transferencia que tarda en acreditarse). Te llegará una
+              confirmación cuando se apruebe.
+            </p>
+          )}
 
           {esReserva ? (
             <div class="siguiente">
               <h2>Último paso: elige tu hora</h2>
               <p>
-                Tu pago quedó registrado con la orden <strong>{detalle.buyOrder}</strong>.
-                Ahora agenda la hora en el calendario y <strong>escribe esta orden en las
+                Tu pago quedó registrado con la referencia <strong>{detalle.referencia}</strong>.
+                Ahora agenda la hora en el calendario y <strong>escribe esta referencia en las
                 notas de la reserva</strong> para que Martha la asocie a tu pago.
               </p>
               <a class="boton" href="/reservar/">Agendar mi hora →</a>
@@ -124,7 +100,7 @@ const titulos: Record<Estado, string> = {
             </div>
           )}
 
-          <p class="script-carrito" data-limpiar-carrito={esReserva ? undefined : ''} />
+          {estado === 'aprobado' && !esReserva && <p class="script-carrito" data-limpiar-carrito="" />}
         </>
       )
     }
@@ -132,9 +108,9 @@ const titulos: Record<Estado, string> = {
     {
       estado === 'rechazado' && (
         <p>
-          Tu banco no autorizó el pago (fondos, cupo o datos de la tarjeta).
+          El pago no fue autorizado (fondos, cupo o datos del medio de pago).
           No se descontó dinero. Puedes <a href="/carrito/">intentar de nuevo</a> con
-          otra tarjeta, o <a href="/ropita/">volver al catálogo</a>.
+          otro medio, o <a href="/ropita/">volver al catálogo</a>.
         </p>
       )
     }
@@ -142,7 +118,7 @@ const titulos: Record<Estado, string> = {
     {
       estado === 'anulado' && (
         <p>
-          Cancelaste el pago en Webpay — no se cobró nada.
+          Cancelaste el pago — no se cobró nada.
           Tu carrito sigue guardado si quieres <a href="/carrito/">retomarlo</a>.
         </p>
       )
@@ -151,9 +127,9 @@ const titulos: Record<Estado, string> = {
     {
       estado === 'error' && (
         <p>
-          Ocurrió un problema al confirmar con Transbank. <strong>Si viste el
-          comprobante de Webpay, tu pago probablemente se realizó</strong> —
-          escríbenos por <a href={waLink(`Hola, pagué con Webpay en la web de ${NEGOCIO.nombre} pero la confirmación falló. ¿Me ayudan a verificar?`)} rel="noopener">WhatsApp</a> y
+          Ocurrió un problema al confirmar con {pasarela.nombre}. <strong>Si viste el
+          comprobante de pago, tu pago probablemente se realizó</strong> —
+          escríbenos por <a href={waLink(`Hola, pagué con ${pasarela.nombre} en la web de ${NEGOCIO.nombre} pero la confirmación falló. ¿Me ayudan a verificar?`)} rel="noopener">WhatsApp</a> y
           lo verificamos al tiro. Si no alcanzaste a pagar, intenta de nuevo.
         </p>
       )
@@ -162,7 +138,7 @@ const titulos: Record<Estado, string> = {
     {
       estado === 'invalido' && (
         <p>
-          Esta página muestra el resultado de un pago con Webpay. Si llegaste
+          Esta página muestra el resultado de un pago online. Si llegaste
           aquí por error, <a href="/">vuelve al inicio</a>.
         </p>
       )
@@ -202,6 +178,10 @@ const titulos: Record<Estado, string> = {
     border: 2px solid var(--color-exito);
     border-radius: var(--radio-m);
 
+    &.pendiente {
+      border-color: var(--color-acento);
+    }
+
     & dt {
       font-size: var(--texto-s);
       color: var(--color-texto-suave);
@@ -212,6 +192,10 @@ const titulos: Record<Estado, string> = {
       font-weight: 700;
       overflow-wrap: anywhere;
     }
+  }
+
+  .nota-pendiente {
+    margin-block-end: var(--espacio-l);
   }
 
   .siguiente {

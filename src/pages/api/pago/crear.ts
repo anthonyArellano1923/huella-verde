@@ -1,5 +1,6 @@
 /**
- * POST /api/pago/crear — inicia una transacción Webpay Plus.
+ * POST /api/pago/crear — inicia un pago con la pasarela activa (Webpay o
+ * MercadoPago, según PASARELA_PAGO).
  *
  * Corre como función serverless (prerender = false). El navegador manda QUÉ
  * quiere pagar (slugs y cantidades, o servicio+tamaño); el TOTAL se calcula
@@ -7,14 +8,13 @@
  * cliente malicioso podría editar el JavaScript de su navegador, pero no
  * puede inventarse un precio: este código es el que manda.
  *
- * Respuesta: { url, token } → el front redirige a `url?token_ws=token`,
- * el cliente paga en el sitio de Transbank y Webpay lo devuelve a
- * /pago/retorno con el mismo token.
+ * Respuesta: { url } — el front redirige directo a esa URL, sin importar
+ * qué pasarela corre detrás.
  */
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { getServicio, getTamano } from '../../../data/servicios';
-import { webpayTransaction, generarBuyOrder } from '../../../lib/transbank';
+import { getPasarela, generarReferencia, type ItemPago } from '../../../lib/pasarela';
 
 export const prerender = false;
 
@@ -34,16 +34,17 @@ export const POST: APIRoute = async ({ request, url }) => {
     return json({ error: 'El cuerpo debe ser JSON.' }, 400);
   }
 
+  const items: ItemPago[] = [];
   let monto = 0;
   let tipo: 'productos' | 'reserva';
 
   if (cuerpo.tipo === 'productos') {
     tipo = 'productos';
-    const items: ItemProducto[] = Array.isArray(cuerpo.items) ? cuerpo.items : [];
-    if (items.length === 0) return json({ error: 'El carrito está vacío.' }, 400);
+    const pedidos: ItemProducto[] = Array.isArray(cuerpo.items) ? cuerpo.items : [];
+    if (pedidos.length === 0) return json({ error: 'El carrito está vacío.' }, 400);
 
     const prendas = await getCollection('prendas');
-    for (const item of items) {
+    for (const item of pedidos) {
       const prenda = prendas.find((p) => p.id === item.slug);
       if (!prenda) return json({ error: `Producto desconocido: ${item.slug}` }, 400);
 
@@ -55,6 +56,12 @@ export const POST: APIRoute = async ({ request, url }) => {
         return json({ error: `Solo quedan ${prenda.data.stock} de "${prenda.data.nombre}".` }, 409);
       }
       monto += prenda.data.precio * qty;
+      items.push({
+        id: prenda.id,
+        titulo: `${prenda.data.nombre} (talla ${prenda.data.talla})`,
+        cantidad: qty,
+        precioUnitario: prenda.data.precio,
+      });
     }
   } else if (cuerpo.tipo === 'reserva') {
     tipo = 'reserva';
@@ -67,22 +74,35 @@ export const POST: APIRoute = async ({ request, url }) => {
     // Se cobra el precio base "desde"; la diferencia por complejidad de
     // raza (si aplica) se paga en el local.
     monto = servicio.precioDesdePorTamano[tamano.id];
+    items.push({
+      id: `${servicio.id}-${tamano.id}`,
+      titulo: `Reserva: ${servicio.nombre} (perro ${tamano.nombre.toLowerCase()})`,
+      cantidad: 1,
+      precioUnitario: monto,
+    });
   } else {
     return json({ error: 'tipo debe ser "productos" o "reserva".' }, 400);
   }
 
-  const buyOrder = generarBuyOrder(tipo);
-  // sessionId identifica la sesión de pago; sin base de datos todavía
-  // (Fase 7), usamos un resumen corto para reconocer el pago en el retorno.
-  const sessionId = buyOrder;
-  const returnUrl = new URL('/pago/retorno', url.origin).href;
+  const referencia = generarReferencia(tipo);
+  const pasarela = getPasarela();
 
   try {
-    const tx = webpayTransaction();
-    const respuesta = await tx.create(buyOrder, sessionId, monto, returnUrl);
-    return json({ url: respuesta.url, token: respuesta.token });
+    const { urlRedireccion } = await pasarela.crearPago({
+      tipo,
+      monto,
+      items,
+      referencia,
+      returnUrl: new URL('/pago/retorno', url.origin).href,
+      notifyUrl: new URL('/api/pago/webhook', url.origin).href,
+    });
+    return json({ url: urlRedireccion });
   } catch (err) {
-    console.error('Error creando transacción Webpay:', err);
-    return json({ error: 'No pudimos conectar con Webpay. Intenta de nuevo en un momento.' }, 502);
+    console.error(`Error creando pago (${pasarela.id}):`, err);
+    const sinToken = err instanceof Error && err.message.includes('MP_ACCESS_TOKEN');
+    if (sinToken) {
+      return json({ error: 'El pago online aún no está configurado (falta la credencial de MercadoPago).' }, 503);
+    }
+    return json({ error: `No pudimos conectar con ${pasarela.nombre}. Intenta de nuevo en un momento.` }, 502);
   }
 };

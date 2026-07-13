@@ -38,14 +38,3 @@ function opciones(): InstanceType<typeof Options> {
 export function webpayTransaction() {
   return new WebpayPlus.Transaction(opciones());
 }
-
-/**
- * Orden de compra única, máx. 26 caracteres (límite de Transbank).
- * Prefijo por tipo: PR=productos, RS=reserva.
- */
-export function generarBuyOrder(tipo: 'productos' | 'reserva'): string {
-  const prefijo = tipo === 'productos' ? 'PR' : 'RS';
-  const tiempo = Date.now().toString(36);
-  const azar = Math.random().toString(36).slice(2, 8);
-  return `MM-${prefijo}-${tiempo}-${azar}`.slice(0, 26);
-}

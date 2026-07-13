@@ -82,6 +82,10 @@ placeholder.
   código, Fase 4 v1 original). No se implementó aún: se decidirá con la dueña
   comparando comisiones cuando haya ventas reales.
 
+> **Actualizado por ADR-008:** las ramas `transbank` y `mercadopago` se
+> unificaron en la rama `pagos`, donde ambas pasarelas conviven tras una
+> interfaz común y se elige la activa por variable de entorno.
+
 ## ADR-006 · CSS moderno sin framework
 
 Tokens de diseño en `src/styles/tokens.css` usando `oklch()` (color perceptual:
@@ -100,3 +104,35 @@ panel de negocio en Google), `@astrojs/sitemap` genera el sitemap, cada página
 define título/descripción/OG propios y `robots.txt` apunta al sitemap. El
 dominio real reemplazará `marthamella.cl` en `astro.config.mjs` y `negocio.ts`
 (Fase 6).
+
+## ADR-008 · Dos pasarelas de pago conviviendo tras una interfaz común
+
+**Contexto:** existían dos ramas gemelas (`transbank` con Webpay Plus,
+`mercadopago` con Checkout Pro) que implementan el MISMO negocio (carrito +
+reserva con precio "desde") con distinta pasarela. Anthony pidió unirlas en
+una sola base, sin descartar ninguna.
+
+**Decisión:**
+1. La base es `transbank`: funciona en integración SIN que Anthony cree
+   ninguna cuenta (Transbank publica credenciales de prueba). MercadoPago
+   exige un token propio; si fuera la base, el sitio quedaría roto hasta que
+   Anthony configure la cuenta. Webpay es la pasarela por defecto.
+2. La diferencia de pasarela se esconde detrás de una interfaz `PasarelaPago`
+   (`src/lib/pasarela.ts`), con una implementación por pasarela en
+   `src/lib/pasarelas/webpay.ts` y `src/lib/pasarelas/mercadopago.ts`.
+3. La pasarela activa se elige con la variable de entorno
+   `PASARELA_PAGO=webpay|mercadopago` (por defecto `webpay`). No se le muestra
+   al cliente un selector: el negocio usa UNA pasarela a la vez, y elegirla
+   tiene implicancias de comisión/UX que decide Martha, no el cliente.
+4. `src/pages/pago/retorno.astro` es UNA sola página que le pregunta a la
+   pasarela activa "¿cómo quedó este pago?" y pinta un resultado normalizado
+   (6 estados: aprobado, pendiente, rechazado, anulado, invalido, error). No
+   se duplican los estados de UI entre pasarelas.
+5. `src/pages/api/pago/webhook.ts` (solo lo usa MercadoPago) responde 200 sin
+   tocar el SDK si la pasarela activa no es MercadoPago, para no romper si
+   llega una notificación perdida.
+
+**Por qué así:** costo fijo $0 (ambos SDK son gratis, solo se paga comisión
+por venta), Anthony cambia de pasarela tocando una variable en Vercel sin
+tocar código, y el día que Martha decida cuál usar, no hay que reescribir
+nada. Detalle técnico completo en `docs/COMO_FUNCIONAN_LOS_PAGOS.md`.
