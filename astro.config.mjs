@@ -9,7 +9,15 @@ export default defineConfig({
   // TODO(Anthony): cambiar por el dominio real comprado en nic.cl (Fase 6).
   // `site` alimenta el sitemap y las URLs canónicas.
   site: 'https://www.huellaverde.cl',
-  integrations: [react(), sitemap()],
+  integrations: [
+    react(),
+    sitemap({
+      // TODO(Anthony): borrar este filtro (y el `noindex` de terminos.astro)
+      // cuando /terminos tenga el contenido definitivo. Mientras muestre
+      // marcadores "TODO", no debe llegar a Google.
+      filter: (pagina) => !pagina.includes('/terminos'),
+    }),
+  ],
   // Rama transbank: la web sigue siendo estática, pero el adapter permite
   // que las rutas marcadas con `prerender = false` (crear/confirmar pago)
   // corran como funciones serverless en Vercel.

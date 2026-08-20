@@ -12,9 +12,14 @@ import { NEGOCIO } from '../data/negocio';
 interface Props {
   titulo: string;
   descripcion?: string;
+  /**
+   * `true` pide a Google que no indexe la página. Se usa en borradores que
+   * ya están enlazados pero todavía no tienen el contenido definitivo.
+   */
+  noindex?: boolean;
 }
 
-const { titulo, descripcion = NEGOCIO.descripcion } = Astro.props;
+const { titulo, descripcion = NEGOCIO.descripcion, noindex = false } = Astro.props;
 const tituloCompleto = `${titulo} · ${NEGOCIO.nombre}`;
 const canonical = new URL(Astro.url.pathname, NEGOCIO.url);
 ---
@@ -30,6 +35,7 @@ const canonical = new URL(Astro.url.pathname, NEGOCIO.url);
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="generator" content={Astro.generator} />
 
     <!-- Open Graph: cómo se ve el enlace al compartirlo por WhatsApp/Instagram -->
