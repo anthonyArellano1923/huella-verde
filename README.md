@@ -1,7 +1,8 @@
 # Peluquería Martha Mella 🐩
 
 Web de peluquería canina con reservas online (Cal.com) y catálogo de ropita
-tejida a mano. Astro 5 + islas React + CSS moderno, desplegada en Vercel.
+tejida a mano. Astro 5 + islas React + CSS moderno, preparada para desplegar
+en Vercel (aún **sin publicar**: ver el estado del proyecto en `docs/`).
 
 ## Ramas
 
@@ -40,8 +41,14 @@ WhatsApp, cuenta Cal.com y dominio).
 
 ## Documentación
 
-- [PLAN.md](PLAN.md) — plan maestro por fases
-- [docs/DECISIONES.md](docs/DECISIONES.md) — decisiones de arquitectura explicadas
-- [docs/GUIA_AGENDA_PARA_LA_DUEÑA.md](docs/GUIA_AGENDA_PARA_LA_DUEÑA.md) — guía no técnica de la agenda
-- [docs/COMO_FUNCIONAN_LOS_PAGOS.md](docs/COMO_FUNCIONAN_LOS_PAGOS.md) — modelo de cobro por rama
-- [docs/BITACORA.md](docs/BITACORA.md) — registro crudo de trabajo
+Los documentos de planificación, decisión y análisis **no se versionan**:
+viven solo en el computador local (`PLAN.md` y `docs/` están en `.gitignore`).
+
+| Archivo (local) | Qué contiene |
+|---|---|
+| `PLAN.md` | Plan maestro por fases |
+| `docs/ESTADO-DEL-PROYECTO.md` | Análisis íntegro del estado, hallazgos y pendientes |
+| `docs/DECISIONES.md` | Decisiones de arquitectura (ADRs) explicadas |
+| `docs/GUIA_AGENDA_PARA_LA_DUEÑA.md` | Guía no técnica de la agenda para Martha |
+| `docs/COMO_FUNCIONAN_LOS_PAGOS.md` | Modelo de cobro y flujo de pasarelas |
+| `docs/BITACORA.md` | Registro crudo de trabajo |

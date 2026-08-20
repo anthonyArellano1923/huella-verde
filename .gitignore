@@ -25,6 +25,7 @@ pnpm-debug.log*
 
 # salida de build del adapter de Vercel
 .vercel/
-# Documentos de planificación 
-
+# Documentos de planificación, decisión y análisis: viven SOLO en local.
+# (Si alguno ya estaba trackeado, hay que sacarlo con `git rm --cached`.)
 docs/
+PLAN.md
