@@ -20,6 +20,7 @@ import { waLinkReserva } from '../utils/whatsapp';
 const datosCliente = {
   usuario: NEGOCIO.calcomUsuario,
   duracionMin: DURACION_SERVICIO_MIN,
+  waReserva: waLinkReserva(),
   servicios: SERVICIOS.map((s) => ({
     id: s.id,
     slug: s.calcomSlug,
@@ -140,6 +141,7 @@ const datosCliente = {
   const contenedor = document.getElementById('cal-contenedor');
   const referencia = document.getElementById('referencia-precio');
   const form = document.querySelector('.selector');
+  let versionCalendario = 0;
 
   const formatCLP = (n) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
@@ -216,6 +218,7 @@ const datosCliente = {
   function montarCalendario() {
     const { servicio } = seleccionActual();
     const ns = servicio.slug;
+    const versionActual = ++versionCalendario;
     contenedor.replaceChildren();
     Cal('init', ns, { origin: 'https://cal.com' });
     window.Cal.ns[ns]('inline', {
@@ -226,6 +229,25 @@ const datosCliente = {
     window.Cal.ns[ns]('ui', {
       styles: { branding: { brandColor: '#2f6b40' } },
     });
+
+    // Si Cal.com no carga (cuenta inexistente, servicio caído, bloqueador de
+    // anuncios), el embed deja loading="failed" y el contenedor queda vacío.
+    // Antes de dejar un hueco en blanco, ofrecemos el camino de WhatsApp.
+    setTimeout(() => {
+      if (versionActual !== versionCalendario) return;
+      const embed = contenedor.querySelector('cal-inline');
+      if (embed && embed.getAttribute('loading') === 'failed') {
+        contenedor.replaceChildren();
+        const aviso = document.createElement('div');
+        aviso.className = 'cal-caido';
+        aviso.innerHTML =
+          '<h2>La agenda online no está disponible en este momento</h2>' +
+          '<p>Reserva tu hora por WhatsApp: te respondemos y te confirmamos al tiro.</p>' +
+          '<a class="boton boton--whatsapp" rel="noopener" href="' + datos.waReserva + '">' +
+          'Reservar por WhatsApp</a>';
+        contenedor.appendChild(aviso);
+      }
+    }, 5000);
   }
 
   // Preselección vía /reservar/?servicio=bano-corte (enlaces de /servicios)
@@ -371,6 +393,23 @@ const datosCliente = {
   .cal-cargando {
     padding: var(--espacio-l);
     color: var(--color-texto-suave);
+  }
+
+  .cal-caido {
+    padding: var(--espacio-l);
+    text-align: center;
+    display: grid;
+    gap: var(--espacio-m);
+    justify-items: center;
+
+    & h2 {
+      font-size: var(--texto-l);
+    }
+
+    & p {
+      color: var(--color-texto-suave);
+      max-width: 40ch;
+    }
   }
 
   .alternativa {

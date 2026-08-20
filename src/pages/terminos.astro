@@ -1,0 +1,121 @@
+---
+/**
+ * Borrador de términos, entregas y privacidad: deja visibles las decisiones
+ * que todavía deben confirmar Anthony y Martha antes de publicar la página.
+ */
+import Base from '../layouts/Base.astro';
+import { NEGOCIO } from '../data/negocio';
+import { POLITICAS_RESERVA } from '../data/servicios';
+---
+
+<Base
+  titulo="Términos y privacidad"
+  descripcion="Información pendiente de confirmar sobre entregas, reservas, precios y datos personales de Huella Verde."
+>
+  <div class="contenedor">
+    <header class="encabezado">
+      <h1>Términos y privacidad</h1>
+      <p>
+        Esta página reúne información sobre compras, reservas y datos personales.
+        Algunos puntos aún están pendientes de confirmación.
+      </p>
+    </header>
+
+    <div class="secciones">
+      <section class="tarjeta-org tarjeta-org--acento">
+        <h2>Entregas</h2>
+        <p class="pendiente">
+          TODO(Anthony): confirmar con Martha si los pedidos se despachan por encomienda o
+          si también se pueden retirar en la peluquería, quién paga el envío y en cuántos
+          días hábiles se entrega.
+        </p>
+      </section>
+
+      <section class="tarjeta-org tarjeta-org--acento">
+        <h2>Cambios y devoluciones</h2>
+        <p class="pendiente">
+          TODO(Anthony): confirmar el plazo para solicitar cambios o devoluciones, el
+          estado en que se debe recibir el producto, quién paga el envío de vuelta y cómo
+          se devuelve la plata.
+        </p>
+      </section>
+
+      <section class="tarjeta-org tarjeta-org--acento">
+        <h2>Cancelación de reservas</h2>
+        <p>
+          Las reservas se pueden cancelar hasta {POLITICAS_RESERVA.cancelacionHoras} horas
+          antes.
+        </p>
+        <p class="pendiente">
+          TODO(Anthony): confirmar qué ocurre con una reserva que se pagó online y luego se
+          cancela.
+        </p>
+      </section>
+
+      <section class="tarjeta-org tarjeta-org--acento">
+        <h2>Precios desde</h2>
+        <p>{POLITICAS_RESERVA.notaPrecios}</p>
+        <p class="pendiente">
+          TODO(Anthony): confirmar con Martha que este texto describe también la forma en
+          que se informa el valor final antes de comenzar el servicio.
+        </p>
+      </section>
+
+      <section class="tarjeta-org tarjeta-org--acento">
+        <h2>Datos personales</h2>
+        <p>
+          Para gestionar reservas y pedidos se pueden solicitar nombre, teléfono, correo,
+          nombre y raza de la mascota, y fotos.
+        </p>
+        <p class="pendiente">
+          TODO(Anthony): confirmar para qué se usa cada dato, si se comparte con terceros y
+          completar el procedimiento para pedir su eliminación escribiendo a
+          <a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a>.
+        </p>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .encabezado {
+    padding-block: var(--espacio-xl) var(--espacio-l);
+    max-width: 60ch;
+
+    & p {
+      margin-block-start: var(--espacio-m);
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .secciones {
+    display: grid;
+    gap: var(--espacio-m);
+  }
+
+  .secciones section {
+    padding: var(--espacio-l);
+    padding-block-start: var(--espacio-xl);
+  }
+
+  .secciones h2 {
+    font-size: var(--texto-l);
+    margin-block-end: var(--espacio-s);
+  }
+
+  .secciones p {
+    max-width: 70ch;
+  }
+
+  .secciones p + p {
+    margin-block-start: var(--espacio-m);
+  }
+
+  /* El amarillo hace visibles los datos que faltan antes de publicar. */
+  .pendiente {
+    padding: var(--espacio-m);
+    border-inline-start: 4px solid var(--color-acento);
+    background: var(--color-acento-suave);
+    font-style: italic;
+  }
+</style>

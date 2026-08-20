@@ -6,16 +6,21 @@
  */
 import { NEGOCIO, WHATSAPP_WA } from '../data/negocio';
 
+const consultaMapa = encodeURIComponent(
+  `${NEGOCIO.direccion.calle}, ${NEGOCIO.direccion.comuna}, ${NEGOCIO.direccion.ciudad}`
+);
+const mapaUrl = `https://www.google.com/maps/search/?api=1&query=${consultaMapa}`;
+
 const schema = {
   '@context': 'https://schema.org',
-  '@type': 'LocalBusiness',
+  '@type': ['LocalBusiness', 'PetStore'],
   '@id': NEGOCIO.url,
   name: NEGOCIO.nombre,
   description: NEGOCIO.descripcion,
   url: NEGOCIO.url,
   telephone: `+${WHATSAPP_WA}`,
   email: NEGOCIO.email,
-  image: new URL('/og-image.svg', NEGOCIO.url).href,
+  image: new URL('/og-image.jpg', NEGOCIO.url).href,
   address: {
     '@type': 'PostalAddress',
     streetAddress: NEGOCIO.direccion.calle,
@@ -23,8 +28,10 @@ const schema = {
     addressRegion: NEGOCIO.direccion.region,
     addressCountry: 'CL',
   },
+  hasMap: mapaUrl,
   openingHours: NEGOCIO.horariosSchema,
   priceRange: '$$',
+  // TODO(Anthony): agregar sameAs cuando exista una URL real de Instagram.
 };
 ---
 
