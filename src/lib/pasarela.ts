@@ -64,8 +64,18 @@ export function generarReferencia(tipo: 'productos' | 'reserva'): string {
   return `MM-${prefijo}-${tiempo}-${azar}`.slice(0, 26);
 }
 
-/** Pasarela activa según PASARELA_PAGO. Por defecto "webpay". */
+/**
+ * Pasarela activa según PASARELA_PAGO. Por defecto "webpay".
+ *
+ * Se lee con `process.env` y NO con `import.meta.env` a propósito: Astro
+ * reemplaza `import.meta.env.X` por su valor EN EL MOMENTO DEL BUILD. Si la
+ * variable no existe al compilar, queda como `undefined` y el compilador
+ * borra como código muerto la rama que dependía de ella — esta función
+ * quedaba literalmente compilada como `return pasarelaWebpay`, y cambiar la
+ * variable en Vercel después no tenía ningún efecto. `process.env` se lee
+ * cada vez que corre la función serverless, que es lo que queremos.
+ */
 export function getPasarela(): PasarelaPago {
-  const cual = import.meta.env.PASARELA_PAGO ?? 'webpay';
+  const cual = process.env.PASARELA_PAGO ?? 'webpay';
   return cual === 'mercadopago' ? pasarelaMercadoPago : pasarelaWebpay;
 }

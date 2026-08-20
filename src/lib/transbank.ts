@@ -16,9 +16,23 @@ import pkg from 'transbank-sdk';
 const { WebpayPlus, Options, IntegrationApiKeys, IntegrationCommerceCodes, Environment } = pkg;
 
 function opciones(): InstanceType<typeof Options> {
-  const commerceCode = import.meta.env.TBK_COMMERCE_CODE;
-  const apiKey = import.meta.env.TBK_API_KEY;
-  const esProduccion = import.meta.env.TBK_ENV === 'produccion';
+  // process.env y no import.meta.env: ver la explicación en pasarela.ts
+  // (import.meta.env se congela en el build y dejaba las credenciales de
+  // integración incrustadas para siempre).
+  const commerceCode = process.env.TBK_COMMERCE_CODE;
+  const apiKey = process.env.TBK_API_KEY;
+  const esProduccion = process.env.TBK_ENV === 'produccion';
+
+  // Red de seguridad: jamás cobrar con credenciales de PRUEBA en el sitio
+  // real. Si esto no estuviera, el cliente vería un voucher aprobado y no se
+  // cobraría un peso. Es preferible un sitio caído a un sitio que finge cobrar.
+  if (!esProduccion && process.env.VERCEL_ENV === 'production') {
+    throw new Error(
+      'ABORTADO: Webpay quedaría en ambiente de INTEGRACIÓN (pagos de mentira) ' +
+        'en el sitio de producción. Define TBK_ENV=produccion, TBK_COMMERCE_CODE ' +
+        'y TBK_API_KEY en Vercel y vuelve a desplegar.'
+    );
+  }
 
   if (esProduccion) {
     if (!commerceCode || !apiKey) {

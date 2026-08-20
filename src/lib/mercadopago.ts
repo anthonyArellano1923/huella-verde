@@ -14,7 +14,8 @@
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
 function getClient(): MercadoPagoConfig {
-  const accessToken = import.meta.env.MP_ACCESS_TOKEN;
+  // process.env y no import.meta.env: ver la explicación en pasarela.ts.
+  const accessToken = process.env.MP_ACCESS_TOKEN;
   if (!accessToken) {
     throw new Error(
       'Falta MP_ACCESS_TOKEN. Crea credenciales en developers.mercadopago.com y defínela en .env o en Vercel.'

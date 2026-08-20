@@ -20,7 +20,9 @@ import { mpPayment } from '../../../lib/mercadopago';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-  if ((import.meta.env.PASARELA_PAGO ?? 'webpay') !== 'mercadopago') {
+  // process.env y no import.meta.env: con import.meta.env este archivo se
+  // compilaba a un `return 200` incondicional y el webhook no procesaba nada.
+  if ((process.env.PASARELA_PAGO ?? 'webpay') !== 'mercadopago') {
     return new Response('ok', { status: 200 });
   }
 
