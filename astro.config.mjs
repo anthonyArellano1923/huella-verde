@@ -15,7 +15,9 @@ export default defineConfig({
       // TODO(Anthony): borrar este filtro (y el `noindex` de terminos.astro)
       // cuando /terminos tenga el contenido definitivo. Mientras muestre
       // marcadores "TODO", no debe llegar a Google.
-      filter: (pagina) => !pagina.includes('/terminos'),
+      // `/dev/` son páginas internas de revisión (p.ej. /dev/ilustraciones):
+      // nunca deben aparecer en el sitemap.
+      filter: (pagina) => !pagina.includes('/terminos') && !pagina.includes('/dev/'),
     }),
   ],
   // Rama transbank: la web sigue siendo estática, pero el adapter permite

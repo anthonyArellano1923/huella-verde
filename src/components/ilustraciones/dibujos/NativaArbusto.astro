@@ -1,0 +1,51 @@
+---
+import Maceta from './Maceta.astro';
+/**
+ * Sclerophyll shrub (quillay / boldo / peumo style): many small, stiff leaves
+ * on a branching frame, a few blossoms. Leaves are generated along each branch.
+ */
+const ramas = [
+  [30, 46],
+  [40, 28],
+  [60, 20],
+  [80, 28],
+  [90, 46],
+  [60, 44],
+];
+const origen = [60, 70];
+const hojas = ramas.flatMap(([ex, ey], i) => {
+  const dx = ex - origen[0];
+  const dy = ey - origen[1];
+  const ang = (Math.atan2(dy, dx) * 180) / Math.PI;
+  return [0.4, 0.68, 1].flatMap((t, j) =>
+    [-45, 45].map((lado) => {
+      const a = ((ang + lado) * Math.PI) / 180;
+      const px = origen[0] + dx * t;
+      const py = origen[1] + dy * t;
+      return {
+        cx: +(px + Math.cos(a) * 5.5).toFixed(1),
+        cy: +(py + Math.sin(a) * 5.5).toFixed(1),
+        rot: +(ang + lado - 90).toFixed(1),
+        c: (i + j + (lado > 0 ? 1 : 0)) % 2 ? 'ilus-hoja' : 'ilus-hoja-2',
+      };
+    }),
+  );
+});
+const flores = [
+  [30, 46],
+  [60, 20],
+  [90, 46],
+  [45, 38],
+  [75, 38],
+];
+---
+
+{ramas.map(([x, y]) => <path d={`M60 70 L${x} ${y}`} />)}
+{hojas.map((h) => <ellipse class={h.c} cx={h.cx} cy={h.cy} rx="2.8" ry="5.4" transform={`rotate(${h.rot} ${h.cx} ${h.cy})`} />)}
+{flores.map(([x, y]) => (
+  <>
+    <circle class="ilus-flor" cx={x} cy={y} r="4" />
+    <circle class="ilus-hoja-clara" cx={x} cy={y} r="1" />
+  </>
+))}
+<Maceta />

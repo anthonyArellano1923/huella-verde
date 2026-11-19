@@ -1,0 +1,18 @@
+---
+/**
+ * Hanging rig: ceiling hook, ring and three cords that meet the pot rim.
+ * Pot rim is centred at (60, rimY) and spans x 36..84.
+ */
+interface Props {
+  rimY?: number;
+}
+const { rimY = 62 } = Astro.props;
+---
+
+<path d="M48 10 H72" />
+<path d="M60 10 V18" />
+<circle class="ilus-metal" cx="60" cy="22" r="4" />
+<path d={`M60 26 L38 ${rimY}`} />
+<path d={`M60 26 L82 ${rimY}`} />
+<path d={`M60 26 V${rimY}`} />
+<circle class="ilus-metal" cx="60" cy="40" r="2.2" />

@@ -1,0 +1,25 @@
+---
+import Maceta from './Maceta.astro';
+// Tip of each flower spike (x, y of its top). Stems curve from the pot centre.
+const puntas = [
+  [32, 36],
+  [46, 24],
+  [60, 18],
+  [74, 24],
+  [88, 36],
+];
+const tallos = puntas.map(([x, y]) => `M60 70 Q${(60 + x) / 2} 54 ${x} ${y + 20}`);
+// Spike = stacked pairs of small ellipses, alternating sides.
+const espigas = puntas.flatMap(([x, y]) =>
+  [0, 1, 2, 3].flatMap((i) => [
+    [x - 2.4, y + 3 + i * 5.5],
+    [x + 2.4, y + 5.8 + i * 5.5],
+  ]),
+);
+---
+
+{tallos.map((d) => <path d={d} />)}
+<path class="ilus-hoja" d="M60 70 C52 62 48 58 46 54 C54 56 58 62 60 70 Z M60 70 C68 62 72 58 74 54 C66 56 62 62 60 70 Z" />
+{espigas.map(([cx, cy]) => <ellipse class="ilus-lavanda" cx={cx} cy={cy} rx="3.2" ry="3.4" />)}
+{puntas.map(([x, y]) => <ellipse class="ilus-lavanda" cx={x} cy={y} rx="2.6" ry="3.6" />)}
+<Maceta />

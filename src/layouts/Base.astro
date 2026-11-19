@@ -17,9 +17,23 @@ interface Props {
    * ya están enlazados pero todavía no tienen el contenido definitivo.
    */
   noindex?: boolean;
+  /**
+   * Voz visual de la página (`data-vertical` en <body>). Si no se pasa se
+   * deriva de la ruta: tienda, peluquería o general.
+   */
+  vertical?: 'peluqueria' | 'tienda' | 'general';
 }
 
-const { titulo, descripcion = NEGOCIO.descripcion, noindex = false } = Astro.props;
+const RUTAS_TIENDA = ['/plantas', '/accesorios', '/carrito', '/pago'];
+const RUTAS_PELUQUERIA = ['/servicios', '/reservar'];
+/** `/plantas` y `/plantas/x` coinciden; `/plantasX` no. */
+const enRuta = (ruta: string, bases: string[]) =>
+  bases.some((b) => ruta === b || ruta.startsWith(`${b}/`));
+
+const { titulo, descripcion = NEGOCIO.descripcion, noindex = false, vertical: verticalProp } = Astro.props;
+const ruta = Astro.url.pathname;
+const vertical =
+  verticalProp ?? (enRuta(ruta, RUTAS_TIENDA) ? 'tienda' : enRuta(ruta, RUTAS_PELUQUERIA) ? 'peluqueria' : 'general');
 const tituloCompleto = `${titulo} · ${NEGOCIO.nombre}`;
 const canonical = new URL(Astro.url.pathname, NEGOCIO.url);
 ---
@@ -51,7 +65,7 @@ const canonical = new URL(Astro.url.pathname, NEGOCIO.url);
 
     <SchemaLocalBusiness />
   </head>
-  <body>
+  <body data-vertical={vertical}>
     <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
     <Header />
     <main id="contenido">

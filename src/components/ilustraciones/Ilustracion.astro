@@ -1,0 +1,114 @@
+---
+/**
+ * Code-drawn illustration by catalog id. Same stroke, framing (viewBox 120,
+ * base at y≈104) and palette for all of them, so they read as one set.
+ * Unknown ids (frontmatter strings) fall back to a neutral sprout, never throw.
+ * No internal ids / defs: the same drawing may repeat many times in one grid.
+ */
+import { esIlustracionConocida, type IlustracionId } from './ids';
+import Suculenta from './dibujos/Suculenta.astro';
+import Cactus from './dibujos/Cactus.astro';
+import Helecho from './dibujos/Helecho.astro';
+import Monstera from './dibujos/Monstera.astro';
+import Potus from './dibujos/Potus.astro';
+import Lavanda from './dibujos/Lavanda.astro';
+import NativaArbusto from './dibujos/NativaArbusto.astro';
+import PlantaColgante from './dibujos/PlantaColgante.astro';
+import MaceteroTerracota from './dibujos/MaceteroTerracota.astro';
+import MaceteroCeramica from './dibujos/MaceteroCeramica.astro';
+import MaceteroColgante from './dibujos/MaceteroColgante.astro';
+import Sustrato from './dibujos/Sustrato.astro';
+import FertilizanteLiquido from './dibujos/FertilizanteLiquido.astro';
+import AbonoOrganico from './dibujos/AbonoOrganico.astro';
+import Regadera from './dibujos/Regadera.astro';
+import Pulverizador from './dibujos/Pulverizador.astro';
+import TijerasPoda from './dibujos/TijerasPoda.astro';
+import KitCuidado from './dibujos/KitCuidado.astro';
+import Generica from './dibujos/Generica.astro';
+
+interface Props {
+  /** Any string: unknown ids render the neutral fallback. */
+  id: string;
+  /** Accessible name. Without it the SVG is decorative (aria-hidden). */
+  title?: string;
+  /** Pixel size. Without it the SVG fills its container's width. */
+  size?: number;
+  class?: string;
+}
+
+const { id, title, size, class: clase } = Astro.props;
+
+const DIBUJOS: Record<IlustracionId, any> = {
+  suculenta: Suculenta,
+  cactus: Cactus,
+  helecho: Helecho,
+  monstera: Monstera,
+  potus: Potus,
+  lavanda: Lavanda,
+  'nativa-arbusto': NativaArbusto,
+  'planta-colgante': PlantaColgante,
+  'macetero-terracota': MaceteroTerracota,
+  'macetero-ceramica': MaceteroCeramica,
+  'macetero-colgante': MaceteroColgante,
+  sustrato: Sustrato,
+  'fertilizante-liquido': FertilizanteLiquido,
+  'abono-organico': AbonoOrganico,
+  regadera: Regadera,
+  pulverizador: Pulverizador,
+  'tijeras-poda': TijerasPoda,
+  'kit-cuidado': KitCuidado,
+};
+const Dibujo = esIlustracionConocida(id) ? DIBUJOS[id] : Generica;
+---
+
+<svg
+  class:list={['ilus', clase]}
+  viewBox="0 0 120 120"
+  width={size}
+  height={size}
+  role={title ? 'img' : undefined}
+  aria-label={title}
+  aria-hidden={title ? undefined : 'true'}
+  focusable="false"
+>
+  <circle class="ilus-bg" cx="60" cy="60" r="54"></circle>
+  <Dibujo />
+</svg>
+
+<style is:global>
+  /* Stroke and fill live on CSS classes, not presentation attributes, so the
+     palette variables (and their dark-mode values) resolve. Global + .ilus
+     prefix because Astro's scoped styles don't reach child components. */
+  .ilus {
+    display: block;
+    /* Without an explicit size, fill the container and stay square */
+    &:not([width]) {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+    }
+    /* Inherited by every shape: one stroke for the whole set */
+    fill: none;
+    stroke: var(--ilus-trazo);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    .ilus-fino { stroke-width: 1.8; }
+    .ilus-bg { fill: var(--ilus-fondo); stroke: none; }
+    .ilus-hoja { fill: var(--ilus-hoja); }
+    .ilus-hoja-2 { fill: var(--ilus-hoja-2); }
+    .ilus-hoja-clara { fill: var(--ilus-hoja-clara); }
+    .ilus-flor { fill: var(--ilus-flor); }
+    .ilus-lavanda { fill: var(--ilus-lavanda); }
+    .ilus-terracota { fill: var(--ilus-terracota); }
+    .ilus-ceramica { fill: var(--ilus-ceramica); }
+    .ilus-esmalte { fill: var(--ilus-esmalte); }
+    .ilus-tierra { fill: var(--ilus-tierra); }
+    .ilus-envase { fill: var(--ilus-envase); }
+    .ilus-envase-2 { fill: var(--ilus-envase-2); }
+    .ilus-etiqueta { fill: var(--ilus-etiqueta); }
+    .ilus-metal { fill: var(--ilus-metal); }
+    .ilus-agua { fill: var(--ilus-agua); }
+  }
+</style>

@@ -189,6 +189,40 @@ button {
   fill: currentColor;
 }
 
+/* — Marco de ilustración: cuadro orgánico para meter una ilustración SVG —
+   `aspect-ratio: 1` reserva un cuadrado sin conocer el ancho (evita saltos de
+   layout) y el radio asimétrico repite la forma de .tarjeta-org. */
+.marco-ilus {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: var(--espacio-m);
+  background: var(--ilus-fondo);
+  border-radius: var(--radio-m) var(--radio-m) var(--radio-m) calc(var(--radio-m) * 2.4);
+  overflow: hidden;
+
+  & > svg {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+}
+
+/* Categoría pequeña sobre un título. El color "fuerte" del vertical activo
+   mantiene contraste AA sobre fondo claro y oscuro. */
+.sobretitulo {
+  font-size: var(--texto-s);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primario-fuerte);
+}
+
+/* Precios: cifras de ancho fijo para que las columnas alineen. */
+.precio {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
 /* Animaciones respetuosas: quien pide menos movimiento, recibe menos */
 @media (prefers-reduced-motion: reduce) {
   html {

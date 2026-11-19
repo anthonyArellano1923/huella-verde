@@ -1,0 +1,25 @@
+---
+/**
+ * Shared pot used by most plants. Draw the plant FIRST and the pot after, so
+ * the rim hides the base of the stems. Rim top sits at y=68, base at y=104.
+ */
+interface Props {
+  tipo?: 'terracota' | 'ceramica';
+}
+const { tipo = 'terracota' } = Astro.props;
+---
+
+{
+  tipo === 'terracota' ? (
+    <>
+      <path class="ilus-terracota" d="M43 76 L47 104 H73 L77 76 Z" />
+      <rect class="ilus-terracota" x="39" y="68" width="42" height="10" rx="3" />
+    </>
+  ) : (
+    <>
+      <path class="ilus-ceramica" d="M42 76 L45 98 Q46 104 52 104 H68 Q74 104 75 98 L78 76 Z" />
+      <path class="ilus-esmalte" d="M43.4 86 H76.6 L75.5 94 H44.5 Z" />
+      <rect class="ilus-ceramica" x="40" y="68" width="40" height="10" rx="3" />
+    </>
+  )
+}

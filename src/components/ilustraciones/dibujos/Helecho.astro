@@ -1,0 +1,16 @@
+---
+import Maceta from './Maceta.astro';
+// One serrated frond drawn pointing up, reused with different rotations.
+const FRONDA =
+  'M60 70 L50 62 L54 60 L48 52 L53 50 L49 42 L55 40 L52 32 L60 22 L68 32 L65 40 L71 42 L67 50 L72 52 L66 60 L70 62 Z';
+const fondas = [
+  { r: -62, c: 'ilus-hoja-2' },
+  { r: 62, c: 'ilus-hoja-2' },
+  { r: -32, c: 'ilus-hoja' },
+  { r: 32, c: 'ilus-hoja' },
+  { r: 0, c: 'ilus-hoja-clara' },
+];
+---
+
+{fondas.map((f) => <path class={f.c} d={FRONDA} transform={`rotate(${f.r} 60 70)`} />)}
+<Maceta />

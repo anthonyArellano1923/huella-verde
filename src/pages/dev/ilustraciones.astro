@@ -1,0 +1,87 @@
+---
+/** Dev-only gallery of the code-drawn illustrations (noindex). */
+import Base from '../../layouts/Base.astro';
+import Ilustracion from '../../components/ilustraciones/Ilustracion.astro';
+import {
+  ILUSTRACIONES_PLANTAS,
+  ILUSTRACIONES_ACCESORIOS,
+  NOMBRES_ILUSTRACION,
+} from '../../components/ilustraciones/ids';
+
+const secciones = [
+  { titulo: 'Plantas', ids: [...ILUSTRACIONES_PLANTAS] as string[] },
+  { titulo: 'Accesorios', ids: [...ILUSTRACIONES_ACCESORIOS] as string[] },
+  { titulo: 'Fallback', ids: ['no-existe'] },
+];
+const nombre = (id: string) => (id in NOMBRES_ILUSTRACION ? NOMBRES_ILUSTRACION[id as keyof typeof NOMBRES_ILUSTRACION] : 'Id desconocido');
+const muestras = ['monstera', 'regadera', 'sustrato'];
+const tamanos = [48, 96, 160];
+---
+
+<Base titulo="Ilustraciones" noindex={true}>
+  <main class="galeria">
+    <h1>Ilustraciones</h1>
+
+    {secciones.map((s) => (
+      <section aria-labelledby={`sec-${s.titulo}`}>
+        <h2 id={`sec-${s.titulo}`}>{s.titulo}</h2>
+        <ul class="grilla">
+          {s.ids.map((id) => (
+            <li class="celda">
+              <div class="marco"><Ilustracion id={id} title={nombre(id)} /></div>
+              <p class="nombre">{nombre(id)}</p>
+              <code>{id}</code>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+
+    <section aria-labelledby="sec-tamanos">
+      <h2 id="sec-tamanos">Tamaños</h2>
+      <ul class="tamanos">
+        {muestras.map((id) => (
+          <li>
+            {tamanos.map((t) => (
+              <figure>
+                <Ilustracion id={id} size={t} />
+                <figcaption>{t}px</figcaption>
+              </figure>
+            ))}
+          </li>
+        ))}
+      </ul>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .galeria {
+    padding: 1.5rem 1rem 3rem;
+    max-width: 72rem;
+    margin-inline: auto;
+  }
+  h2 { margin-block: 2rem 1rem; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  .grilla {
+    display: grid;
+    gap: 0.75rem;
+    /* Mobile first: 2 columns, then 4 and 5 as space allows */
+    grid-template-columns: repeat(2, 1fr);
+    @media (min-width: 40rem) { grid-template-columns: repeat(4, 1fr); }
+    @media (min-width: 64rem) { grid-template-columns: repeat(5, 1fr); }
+  }
+  .celda { min-width: 0; }
+  .marco {
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 1rem;
+    padding: 0.5rem;
+  }
+  .nombre { margin: 0.5rem 0 0.125rem; font-weight: 600; }
+  code { font-size: 0.8rem; color: var(--color-texto-suave); overflow-wrap: anywhere; }
+  .tamanos { display: grid; gap: 1.5rem; }
+  .tamanos li { display: flex; flex-wrap: wrap; align-items: end; gap: 1.5rem; }
+  figure { margin: 0; }
+  figcaption { font-size: 0.8rem; color: var(--color-texto-suave); }
+</style>
