@@ -1,0 +1,21 @@
+---
+/** Detail page for one product of the `accesorios` collection. */
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProductoDetalle from '../../components/ProductoDetalle.astro';
+
+/** One static page per entry in the collection. */
+export async function getStaticPaths() {
+  const productos = await getCollection('accesorios');
+  return productos.map((producto) => ({
+    params: { slug: producto.id },
+    props: { producto },
+  }));
+}
+
+const { producto } = Astro.props;
+---
+
+<Base titulo={producto.data.nombre} descripcion={producto.data.descripcion}>
+  <ProductoDetalle producto={producto} />
+</Base>
