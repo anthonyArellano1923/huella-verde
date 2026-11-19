@@ -1,0 +1,101 @@
+---
+/**
+ * Accessories listing, grouped by category (maceteros, sustratos, ...) so
+ * shoppers can jump straight to what they need.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProductoCard from '../../components/ProductoCard.astro';
+import { ordenarProductos } from '../../components/ordenar-productos';
+
+/** Section order and headings; empty categories are skipped. */
+const SECCIONES = [
+  ['macetero', 'Maceteros'],
+  ['sustrato', 'Sustratos'],
+  ['fertilizante', 'Fertilizantes'],
+  ['suplemento', 'Suplementos'],
+  ['cuidado', 'Cuidado'],
+  ['herramienta', 'Herramientas'],
+] as const;
+
+const accesorios = ordenarProductos(await getCollection('accesorios'));
+const secciones = SECCIONES.map(([categoria, titulo]) => ({
+  categoria,
+  titulo,
+  productos: accesorios.filter((a) => a.data.categoria === categoria),
+})).filter((s) => s.productos.length > 0);
+---
+
+<Base
+  titulo="Accesorios para plantas"
+  descripcion="Maceteros, sustratos, fertilizantes y herramientas elegidos según lo que de verdad necesita cada planta. Retiro en el local o despacho."
+>
+  <div class="contenedor">
+    <header class="encabezado">
+      <h1>Accesorios</h1>
+      <p>
+        Lo justo para que tus plantas estén bien: cada producto dice para qué plantas sirve y
+        cuándo conviene evitarlo.
+      </p>
+      <nav aria-label="Categorías" class="categorias">
+        {secciones.map((s) => <a href={`#${s.categoria}`}>{s.titulo}</a>)}
+      </nav>
+    </header>
+
+    {
+      secciones.map((s) => (
+        <section id={s.categoria} class="seccion" aria-labelledby={`titulo-${s.categoria}`}>
+          <h2 id={`titulo-${s.categoria}`}>{s.titulo}</h2>
+          <div class="grilla">
+            {s.productos.map((p) => <ProductoCard producto={p} />)}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</Base>
+
+<style>
+  .encabezado {
+    padding-block: var(--espacio-xl) var(--espacio-l);
+    max-width: 60ch;
+
+    & p {
+      margin-block-start: var(--espacio-m);
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .categorias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-s);
+    margin-block-start: var(--espacio-m);
+
+    & a {
+      padding: 0.3em 0.9em;
+      border-radius: var(--radio-pill);
+      border: 1px solid var(--color-borde);
+      background: var(--color-superficie);
+      font-size: var(--texto-s);
+      font-weight: 600;
+      text-decoration: none;
+    }
+  }
+
+  .seccion {
+    margin-block-end: var(--espacio-xl);
+    scroll-margin-block-start: var(--espacio-xl);
+
+    & h2 {
+      margin-block-end: var(--espacio-m);
+      font-size: var(--texto-l);
+    }
+  }
+
+  .grilla {
+    display: grid;
+    gap: var(--espacio-m);
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+</style>

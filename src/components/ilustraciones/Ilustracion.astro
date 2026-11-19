@@ -1,0 +1,40 @@
+---
+/**
+ * Placeholder product illustration.
+ *
+ * Minimal stand-in so the shop pages build on their own: draws a neutral
+ * pot-and-leaf silhouette and exposes the id as the SVG <title>. The design
+ * branch ships the real component at this same path with the same `id`
+ * prop, and it replaces this file when the branches are merged.
+ */
+interface Props {
+  /** Illustration id, e.g. "suculenta" or "macetero-terracota". */
+  id: string;
+  /** Optional extra class forwarded to the <svg>. */
+  class?: string;
+}
+
+const { id, class: clase } = Astro.props;
+---
+
+<svg
+  class:list={['ilustracion', clase]}
+  viewBox="0 0 120 120"
+  role="img"
+  xmlns="http://www.w3.org/2000/svg"
+  data-ilustracion={id}
+>
+  <title>{id}</title>
+  <rect width="120" height="120" fill="var(--color-primario-suave)" />
+  <path d="M60 70 C40 60 38 40 50 28 C58 42 60 55 60 70 Z" fill="var(--color-primario)" opacity="0.7" />
+  <path d="M60 70 C80 60 82 40 70 28 C62 42 60 55 60 70 Z" fill="var(--color-primario)" />
+  <path d="M40 70 H80 L74 98 H46 Z" fill="var(--color-borde)" />
+</svg>
+
+<style>
+  .ilustracion {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

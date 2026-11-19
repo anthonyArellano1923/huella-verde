@@ -1,0 +1,51 @@
+---
+/** Plant shop listing: responsive grid fed by the `plantas` collection. */
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProductoCard from '../../components/ProductoCard.astro';
+import { ordenarProductos } from '../../components/ordenar-productos';
+
+const plantas = ordenarProductos(await getCollection('plantas'));
+---
+
+<Base
+  titulo="Plantas"
+  descripcion="Plantas nativas de la zona central y de interior, con ficha de cuidados pensada para el clima de Santiago. Retiro en el local o despacho."
+>
+  <div class="contenedor">
+    <header class="encabezado">
+      <h1>Plantas</h1>
+      <p>
+        Nativas de la zona central y algunas favoritas de interior. Cada ficha te dice cuánta
+        luz y agua necesita y si convive bien con perros y gatos.
+      </p>
+      <p class="cruce">¿Buscas macetero o sustrato? <a href="/accesorios/">Ver accesorios →</a></p>
+    </header>
+
+    <div class="grilla">
+      {plantas.map((planta) => <ProductoCard producto={planta} />)}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .encabezado {
+    padding-block: var(--espacio-xl) var(--espacio-l);
+    max-width: 60ch;
+
+    & p {
+      margin-block-start: var(--espacio-m);
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .cruce {
+    font-size: var(--texto-s);
+  }
+
+  .grilla {
+    display: grid;
+    gap: var(--espacio-m);
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+</style>
