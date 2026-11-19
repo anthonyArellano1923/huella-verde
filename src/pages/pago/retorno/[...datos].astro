@@ -1,35 +1,37 @@
 ---
 /**
- * Página de retorno de pagos (prerender = false: corre en el servidor en
- * cada visita, porque debe VERIFICAR el pago con la pasarela real, nunca
- * confiar en los query params que trae el navegador).
+ * Página de retorno de pagos con tarjeta (prerender = false: corre en el
+ * servidor en cada visita, porque debe VERIFICAR el pago con la pasarela
+ * real, nunca confiar en los query params que trae el navegador).
  *
- * Es una sola página para las dos pasarelas: le pregunta a la pasarela
- * ACTIVA (según PASARELA_PAGO) "¿cómo quedó este pago?" y pinta un
- * resultado normalizado. Cada pasarela solo produce sus propios estados
- * (Webpay nunca vuelve "pendiente"; MercadoPago nunca vuelve "anulado"),
- * así que los bloques que no aplican simplemente no se muestran.
+ * Ruta /pago/retorno/[...datos]: Webpay vuelve a /pago/retorno/<pedido>/<firma>
+ * (el pedido firmado sirve para el aviso a Martha, ver pasarelas/webpay.ts);
+ * MercadoPago vuelve a /pago/retorno?ref=... Una sola página para ambas:
+ * procesarRetorno() detecta la pasarela por los parámetros de la vuelta,
+ * verifica, avisa a Martha la primera vez y entrega un resultado normalizado.
  */
-import Base from '../../layouts/Base.astro';
-import { NEGOCIO } from '../../data/negocio';
-import { formatCLP } from '../../utils/money';
-import { waLink } from '../../utils/whatsapp';
-import { getPasarela, type EstadoPago } from '../../lib/pasarela';
+import Base from '../../../layouts/Base.astro';
+import { NEGOCIO } from '../../../data/negocio';
+import { formatCLP } from '../../../utils/money';
+import { waLink } from '../../../utils/whatsapp';
+import { procesarRetorno, type EstadoPago } from '../../../lib/pasarela';
 
 export const prerender = false;
 
-const pasarela = getPasarela();
-const { estado, detalle } = await pasarela.verificarRetorno(Astro.request, Astro.url);
+const ruta = (Astro.params.datos ?? '').split('/').filter(Boolean);
+const { pasarela, resultado } = await procesarRetorno(Astro.request, Astro.url, ruta);
+const { estado, detalle } = resultado;
+const nombrePasarela = pasarela?.nombre ?? 'el pago online';
 
 const esReserva = detalle?.referencia.includes('-RS-') ?? false;
 const waComprobante = detalle
   ? waLink(
-      `¡Hola! Acabo de pagar con ${pasarela.nombre} en la web de ${NEGOCIO.nombre}.\n` +
+      `¡Hola! Acabo de pagar con ${nombrePasarela} en la web de ${NEGOCIO.nombre}.\n` +
         `Referencia: ${detalle.referencia}\n` +
         `Monto: ${formatCLP(detalle.monto)}\n` +
         (esReserva
           ? 'Es el pago de una reserva — te confirmo la hora que agendé.'
-          : 'Es una compra de ropita — ¿coordinamos la entrega?')
+          : 'Es una compra de la tienda — ¿coordinamos la entrega?')
     )
   : '';
 
@@ -38,12 +40,13 @@ const titulos: Record<EstadoPago, string> = {
   pendiente: 'Pago en proceso',
   rechazado: 'Pago rechazado',
   anulado: 'Pago anulado',
+  expirado: 'Se acabó el tiempo para pagar',
   invalido: 'Página de retorno de pagos',
   error: 'No pudimos confirmar tu pago',
 };
 ---
 
-<Base titulo={titulos[estado]} descripcion={`Resultado de tu pago con ${pasarela.nombre}.`}>
+<Base titulo={titulos[estado]} descripcion={`Resultado de tu pago con ${nombrePasarela}.`}>
   <div class="contenedor resultado">
     <h1>{titulos[estado]}</h1>
 
@@ -110,7 +113,7 @@ const titulos: Record<EstadoPago, string> = {
         <p>
           El pago no fue autorizado (fondos, cupo o datos del medio de pago).
           No se descontó dinero. Puedes <a href="/carrito/">intentar de nuevo</a> con
-          otro medio, o <a href="/ropita/">volver al catálogo</a>.
+          otro medio (también por transferencia), o <a href="/">volver al inicio</a>.
         </p>
       )
     }
@@ -125,11 +128,21 @@ const titulos: Record<EstadoPago, string> = {
     }
 
     {
+      estado === 'expirado' && (
+        <p>
+          El formulario de pago estuvo abierto demasiado tiempo y se cerró por
+          seguridad. No se cobró nada. Tu carrito sigue guardado: puedes
+          <a href="/carrito/">intentarlo de nuevo</a>.
+        </p>
+      )
+    }
+
+    {
       estado === 'error' && (
         <p>
-          Ocurrió un problema al confirmar con {pasarela.nombre}. <strong>Si viste el
+          Ocurrió un problema al confirmar con {nombrePasarela}. <strong>Si viste el
           comprobante de pago, tu pago probablemente se realizó</strong> —
-          escríbenos por <a href={waLink(`Hola, pagué con ${pasarela.nombre} en la web de ${NEGOCIO.nombre} pero la confirmación falló. ¿Me ayudan a verificar?`)} rel="noopener">WhatsApp</a> y
+          escríbenos por <a href={waLink(`Hola, pagué con ${nombrePasarela} en la web de ${NEGOCIO.nombre} pero la confirmación falló. ¿Me ayudan a verificar?`)} rel="noopener">WhatsApp</a> y
           lo verificamos al tiro. Si no alcanzaste a pagar, intenta de nuevo.
         </p>
       )

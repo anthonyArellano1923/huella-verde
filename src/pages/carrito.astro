@@ -1,5 +1,8 @@
 ---
-/** Página del carrito: la lista interactiva es una isla React (client:load). */
+/**
+ * Página del carrito: la lista interactiva y los botones de pago (tarjeta o
+ * transferencia) son una isla React (client:load).
+ */
 import Base from '../layouts/Base.astro';
 import CarritoLista from '../components/react/CarritoLista';
 ---
@@ -9,9 +12,7 @@ import CarritoLista from '../components/react/CarritoLista';
     <h1>Tu carrito</h1>
     <CarritoLista client:load />
     <p class="alternativa">
-      ¿Prefieres pagar por transferencia? También puedes
-      <a href="/ropita/">elegir tus prendas</a> y coordinar por WhatsApp desde
-      la página de cada una.
+      La entrega se coordina después del pago: retiro en el local o despacho.
     </p>
   </div>
 </Base>
@@ -92,6 +93,12 @@ import CarritoLista from '../components/react/CarritoLista';
     background: var(--color-superficie);
     border-radius: var(--radio-s);
     margin-block-end: var(--espacio-m);
+  }
+
+  .carrito__pagos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-s);
   }
 
   .carrito__nota {

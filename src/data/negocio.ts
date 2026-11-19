@@ -51,5 +51,24 @@ export const NEGOCIO = {
   calcomUsuario: 'huella-verde',
 } as const;
 
+/**
+ * Datos bancarios para pago por transferencia (se muestran al cliente en
+ * /pago/transferencia). Mientras algún campo diga TODO, el pago por
+ * transferencia queda DESACTIVADO en el sitio de producción: nadie debe
+ * transferir a una cuenta ficticia.
+ *
+ * TODO(Anthony): reemplazar con los datos que entregue Martha (cuenta a
+ * nombre del mismo RUT que emite las boletas).
+ */
+export const DATOS_TRANSFERENCIA = {
+  titular: 'TODO(Anthony): nombre del titular',
+  rut: 'TODO(Anthony): RUT del titular',
+  banco: 'TODO(Anthony): banco',
+  tipoCuenta: 'TODO(Anthony): cuenta corriente / vista / RUT',
+  numeroCuenta: 'TODO(Anthony): número de cuenta',
+  /** Correo que el banco notifica al hacer la transferencia (opcional para el cliente). */
+  email: NEGOCIO.email,
+} as const;
+
 /** Número en formato E.164 sin '+', listo para enlaces wa.me. */
 export const WHATSAPP_WA = `56${NEGOCIO.whatsapp}`;
