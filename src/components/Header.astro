@@ -105,7 +105,7 @@ const esActual = (href: string) => {
     align-items: center;
     gap: var(--espacio-s);
     min-block-size: 44px;
-    font-family: var(--fuente-titulos);
+    font-family: var(--fuente-marca);
     font-size: var(--texto-l);
     font-weight: 700;
     color: var(--color-texto);
@@ -128,7 +128,7 @@ const esActual = (href: string) => {
     flex-basis: 100%;
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: var(--espacio-xs) var(--espacio-m);
     min-inline-size: 0;
   }
@@ -190,7 +190,12 @@ const esActual = (href: string) => {
     }
   }
 
+  /* Alto fijo del rótulo: la serif de la tienda es más alta que la sans de
+     la peluquería; sin esto los dos grupos quedan desalineados. */
   .grupo__rotulo {
+    display: flex;
+    align-items: center;
+    block-size: 1.25rem;
     padding-inline: 0.4em;
     font-size: 0.75rem;
     font-weight: 700;
@@ -206,6 +211,7 @@ const esActual = (href: string) => {
     font-family: var(--fuente-editorial);
     font-size: 0.85rem;
     letter-spacing: 0.06em;
+    line-height: 1;
   }
 
   nav ul {

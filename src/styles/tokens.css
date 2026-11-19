@@ -35,7 +35,10 @@
   --color-whatsapp: oklch(0.52 0.14 150);
 
   /* — Tipografía — sistema, sin webfonts: carga instantánea en móvil */
-  --fuente-titulos: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  /* La marca (logo en el header) usa siempre la misma fuente, en cualquier
+     vertical; los títulos sí cambian de voz en la tienda. */
+  --fuente-marca: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  --fuente-titulos: var(--fuente-marca);
   --fuente-texto: system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Escala fluida: crece con el viewport sin media queries */
