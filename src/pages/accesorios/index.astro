@@ -5,6 +5,7 @@
  */
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { resumenEntrega } from '../../data/terminos';
 import ProductoCard from '../../components/ProductoCard.astro';
 import { ordenarProductos } from '../../components/ordenar-productos';
 
@@ -27,8 +28,8 @@ const secciones = SECCIONES.map(([categoria, titulo]) => ({
 ---
 
 <Base
-  titulo="Accesorios para plantas"
-  descripcion="Maceteros, sustratos, fertilizantes y herramientas elegidos según lo que de verdad necesita cada planta. Retiro en el local o despacho."
+  titulo="Maceteros, sustratos y accesorios para plantas"
+  descripcion={`Maceteros, sustratos, fertilizantes y herramientas de jardín en Santiago, elegidos según lo que necesita cada planta. Pago online o por transferencia. ${resumenEntrega()}`}
 >
   <div class="contenedor">
     <header class="encabezado">
