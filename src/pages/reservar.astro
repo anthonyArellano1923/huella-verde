@@ -91,7 +91,7 @@ const datosCliente = {
     */}
     <aside class="pagar-online" id="pagar-online" data-wa-base={waLink('')}>
       <h2>¿Quieres dejar tu hora pagada? <span class="opcional">(opcional)</span></h2>
-      <p>
+      <p id="explicacion-pago-reserva">
         Paga ahora online y agenda después: al aprobarse el pago recibirás
         una <strong>referencia</strong> para escribir en las notas de tu
         reserva. Se paga el <strong>precio base ("desde")</strong>; si tu
@@ -230,6 +230,8 @@ const datosCliente = {
     .then((medios) => {
       const tarjeta = medios.tarjeta === true;
       botonPagar.hidden = !tarjeta;
+      // "Paga ahora online…" contradice el aviso de no disponible: se oculta.
+      document.getElementById('explicacion-pago-reserva').hidden = !tarjeta;
       enlaceWaPago.hidden = tarjeta;
       estadoPago.hidden = tarjeta;
       estadoPago.textContent = tarjeta
