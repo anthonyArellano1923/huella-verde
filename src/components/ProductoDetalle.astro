@@ -71,7 +71,6 @@ const schemaProducto = {
   sku: idCarrito,
   url: urlProducto,
   category: producto.collection === 'accesorios' ? ETIQUETA_CATEGORIA[producto.data.categoria] : 'Plantas',
-  brand: { '@type': 'Brand', name: NEGOCIO.nombre },
   ...(imagenSchema && { image: imagenSchema }),
   offers: {
     '@type': 'Offer',
