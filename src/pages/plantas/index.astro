@@ -2,6 +2,7 @@
 /** Plant shop listing: responsive grid fed by the `plantas` collection. */
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { resumenEntrega } from '../../data/terminos';
 import ProductoCard from '../../components/ProductoCard.astro';
 import { ordenarProductos } from '../../components/ordenar-productos';
 
@@ -9,8 +10,8 @@ const plantas = ordenarProductos(await getCollection('plantas'));
 ---
 
 <Base
-  titulo="Plantas"
-  descripcion="Plantas nativas de la zona central y de interior, con ficha de cuidados pensada para el clima de Santiago. Retiro en el local o despacho."
+  titulo="Plantas nativas y de interior"
+  descripcion={`Plantas nativas de la zona central y de interior en Santiago, con ficha de luz, riego y si son aptas para mascotas. Pago online o por transferencia. ${resumenEntrega()}`}
 >
   <div class="contenedor">
     <header class="encabezado">

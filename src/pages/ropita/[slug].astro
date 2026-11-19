@@ -27,7 +27,7 @@ const agotada = stock === 0;
 const etiquetaTemporada = { invierno: 'Invierno', verano: 'Verano', 'todo-el-año': 'Todo el año' }[temporada];
 ---
 
-<Base titulo={nombre} descripcion={descripcion}>
+<Base titulo={nombre} descripcion={descripcion} noindex>
   <div class="contenedor detalle">
     <nav aria-label="Miga de pan" class="miga">
       <a href="/ropita/">← Volver al catálogo</a>

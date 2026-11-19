@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
+import { terminosPublicables } from './src/data/terminos.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,12 +13,17 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap({
-      // TODO(Anthony): borrar este filtro (y el `noindex` de terminos.astro)
-      // cuando /terminos tenga el contenido definitivo. Mientras muestre
-      // marcadores "TODO", no debe llegar a Google.
-      // `/dev/` son páginas internas de revisión (p.ej. /dev/ilustraciones):
-      // nunca deben aparecer en el sitemap.
-      filter: (pagina) => !pagina.includes('/terminos') && !pagina.includes('/dev/'),
+      // Fuera del sitemap:
+      // - /terminos mientras `terminosPublicables()` sea false (decisiones de
+      //   Martha sin confirmar en src/data/terminos.ts; la página lleva noindex).
+      // - /ropita: fuera del alcance de lanzamiento (la ruta existe con noindex).
+      // - /dev/: páginas internas de revisión (p. ej. /dev/ilustraciones).
+      // - /carrito y /pago/: pasos de compra, sin valor en buscadores.
+      filter: (pagina) => {
+        const ruta = new URL(pagina).pathname;
+        if (ruta.startsWith('/terminos') && !terminosPublicables()) return false;
+        return !['/ropita', '/dev/', '/carrito', '/pago/'].some((r) => ruta.startsWith(r));
+      },
     }),
   ],
   // Rama transbank: la web sigue siendo estática, pero el adapter permite

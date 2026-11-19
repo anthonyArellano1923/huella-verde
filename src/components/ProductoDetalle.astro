@@ -7,13 +7,14 @@
  * "plantas/echeveria") so the checkout can tell shop products apart from
  * the dog-clothing catalog.
  */
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import { render, type CollectionEntry } from 'astro:content';
 import BotonAgregarCarrito from './react/BotonAgregarCarrito';
 import Ilustracion from './ilustraciones/Ilustracion.astro';
 import { formatCLP } from '../utils/money';
 import { waLink } from '../utils/whatsapp';
 import { NEGOCIO } from '../data/negocio';
+import { TERMINOS, resumenEntrega } from '../data/terminos';
 import {
   ETIQUETA_CATEGORIA,
   ETIQUETA_DIFICULTAD,
@@ -53,6 +54,38 @@ const advertencias = producto.collection === 'accesorios' ? producto.data.advert
 datos.push(['Disponibles', agotado ? 'Agotado' : String(stock)]);
 
 /**
+ * Schema.org Product + Offer (JSON-LD) so search engines can show price and
+ * availability. The seller points to the LocalBusiness emitted by Base
+ * (same `@id`). Image only when there is a real photo: illustrations are
+ * inline SVG and the generic og-image is not a product picture.
+ */
+const urlProducto = new URL(Astro.url.pathname, NEGOCIO.url).href;
+const imagenSchema = foto
+  ? new URL((await getImage({ src: foto, width: 1200, format: 'jpg' })).src, NEGOCIO.url).href
+  : undefined;
+const schemaProducto = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: nombre,
+  description: descripcion,
+  sku: idCarrito,
+  url: urlProducto,
+  category: producto.collection === 'accesorios' ? ETIQUETA_CATEGORIA[producto.data.categoria] : 'Plantas',
+  ...(imagenSchema && { image: imagenSchema }),
+  offers: {
+    '@type': 'Offer',
+    url: urlProducto,
+    price: precio,
+    priceCurrency: 'CLP',
+    availability: agotado ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+    itemCondition: 'https://schema.org/NewCondition',
+    seller: { '@id': NEGOCIO.url },
+  },
+};
+/** JSON for the <script> tag; "<" escaped so text can never close the tag. */
+const jsonLdProducto = JSON.stringify(schemaProducto).replace(/</g, '\\u003c');
+
+/**
  * Builds the pre-filled WhatsApp message for this product.
  *
  * @param consulta - true when the product is sold out (asks for restock instead).
@@ -71,6 +104,8 @@ function enlaceWhatsApp(consulta: boolean): string {
   return waLink(lineas.join('\n'));
 }
 ---
+
+<script type="application/ld+json" set:html={jsonLdProducto} />
 
 <div class="contenedor detalle">
   <nav aria-label="Miga de pan" class="miga">
@@ -136,8 +171,12 @@ function enlaceWhatsApp(consulta: boolean): string {
               stock={stock}
             />
             <p class="nota-pago">
-              Pago online seguro. La entrega se coordina después del pago: retiro en el local o
-              despacho.
+              Pago online seguro. {resumenEntrega()} Se coordina después del pago.{' '}
+              {/* Ley 19.496 art. 3 bis: la exclusión del retracto debe informarse antes del pago */}
+              {esPlanta && TERMINOS.retracto.excluirPlantas && (
+                <>Por ser perecibles, las plantas no tienen derecho a retracto. </>
+              )}
+              <a href="/terminos/#garantia">Cambios y devoluciones</a>
             </p>
             <a class="enlace-whatsapp" href={enlaceWhatsApp(false)} rel="noopener">
               ¿Prefieres transferencia? Pide por WhatsApp →

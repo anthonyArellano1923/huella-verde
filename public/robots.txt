@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /pago/
+Disallow: /dev/
 
 Sitemap: https://www.huellaverde.cl/sitemap-index.xml

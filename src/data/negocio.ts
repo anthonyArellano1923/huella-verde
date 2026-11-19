@@ -11,12 +11,12 @@ export const NEGOCIO = {
   /** Nombre de la dueña, usado en textos ("tejido a mano por Martha"). */
   duena: 'Martha Mella',
   /**
-   * Slogan de la MARCA (compartida con el negocio de plantas de Martha).
-   * Esta web cubre solo el lado mascotas: peluquería, reservas y ropita.
+   * Slogan de la MARCA. La web cubre dos negocios con la misma marca:
+   * peluquería canina (reservas) y tienda de plantas y accesorios.
    */
   slogan: 'Con amor por las mascotas',
   descripcion:
-    'Huella Verde, peluquería canina: baño, corte, stripping y deslanado con reserva de hora online, y ropita de invierno tejida a mano.',
+    'Huella Verde, en Santiago Centro: peluquería canina con reserva de hora online (baño, corte, stripping y deslanado) y tienda de plantas nativas y de interior con sus accesorios.',
 
   whatsapp: '954417939',
 

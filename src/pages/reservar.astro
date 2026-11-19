@@ -15,6 +15,7 @@ import { NEGOCIO } from '../data/negocio';
 import { SERVICIOS, TAMANOS, DURACION_SERVICIO_MIN, POLITICAS_RESERVA } from '../data/servicios';
 import { formatCLP } from '../utils/money';
 import { waLink, waLinkReserva } from '../utils/whatsapp';
+import { TERMINOS } from '../data/terminos';
 
 // Datos que necesita el script del cliente, serializados una sola vez.
 const datosCliente = {
@@ -99,6 +100,15 @@ const datosCliente = {
         el local. También puedes pagar todo en el local, como siempre.
       </p>
       <p class="estado-pago" id="estado-pago-reserva" aria-live="polite">Cargando medios de pago…</p>
+      {/* Ley 19.496 art. 3 bis: la exclusión del retracto en servicios debe
+          informarse de forma destacada antes del pago. */}
+      {TERMINOS.reservas.excluirRetracto && (
+        <p class="aviso-retracto" id="aviso-retracto-reserva" hidden>
+          Las reservas pagadas no tienen derecho a retracto: puedes cancelarlas o cambiarlas
+          hasta {POLITICAS_RESERVA.cancelacionHoras} horas antes.{' '}
+          <a href="/terminos/#reservas">Ver condiciones de reserva</a>
+        </p>
+      )}
       <button class="boton boton--secundario" type="button" id="boton-pagar-reserva" hidden>
         Pagar esta reserva ahora
       </button>
@@ -232,6 +242,9 @@ const datosCliente = {
       botonPagar.hidden = !tarjeta;
       // "Paga ahora online…" contradice el aviso de no disponible: se oculta.
       document.getElementById('explicacion-pago-reserva').hidden = !tarjeta;
+      // The no-withdrawal notice only applies when an online payment is offered.
+      const avisoRetracto = document.getElementById('aviso-retracto-reserva');
+      if (avisoRetracto) avisoRetracto.hidden = !tarjeta;
       enlaceWaPago.hidden = tarjeta;
       estadoPago.hidden = tarjeta;
       estadoPago.textContent = tarjeta
@@ -431,6 +444,11 @@ const datosCliente = {
     border-inline-start: 4px solid var(--color-acento);
     background: var(--color-acento-suave);
     border-radius: var(--radio-s);
+    font-weight: 600;
+  }
+
+  .aviso-retracto {
+    font-size: var(--texto-s);
     font-weight: 600;
   }
 

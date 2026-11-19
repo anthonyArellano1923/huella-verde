@@ -1,87 +1,332 @@
 ---
 /**
- * Borrador de términos, entregas y privacidad: deja visibles las decisiones
- * que todavía deben confirmar Anthony y Martha antes de publicar la página.
+ * Términos y condiciones de compra, reservas y privacidad.
+ *
+ * Todo el texto variable sale de `src/data/terminos.ts` (decisiones del
+ * negocio), `NEGOCIO` (contacto) y `POLITICAS_RESERVA` (plazos de agenda):
+ * para cambiar una política se edita el dato, no esta página. Mientras
+ * `terminosPublicables()` sea false la página lleva `noindex`.
  */
 import Base from '../layouts/Base.astro';
 import { NEGOCIO } from '../data/negocio';
 import { POLITICAS_RESERVA } from '../data/servicios';
+import { TERMINOS, terminosPublicables } from '../data/terminos';
+import { waLinkConsulta } from '../utils/whatsapp';
+
+const { vendedor, entrega, retracto, plantas, reservas, pagos } = TERMINOS;
+const direccion = `${NEGOCIO.direccion.calle}, ${NEGOCIO.direccion.comuna}, ${NEGOCIO.direccion.region}`;
+
+/** "19 de noviembre de 2026" from the ISO date in TERMINOS. */
+const fechaActualizacion = new Date(`${TERMINOS.actualizado}T12:00:00`).toLocaleDateString('es-CL', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+/**
+ * Formats a day count in Spanish ("1 día hábil", "3 días hábiles").
+ *
+ * @param n - Number of days.
+ * @param habiles - Whether they are business days.
+ * @returns The phrase with the number and the right plural.
+ */
+function dias(n: number, habiles = false): string {
+  const base = n === 1 ? 'día' : 'días';
+  const sufijo = habiles ? (n === 1 ? ' hábil' : ' hábiles') : '';
+  return `${n} ${base}${sufijo}`;
+}
+
+/** Table of contents: [anchor id, heading]. Order matches the sections. */
+const indice: [string, string][] = [
+  ['vendedor', 'Quién vende'],
+  ['compras', 'Precios y compras'],
+  ['pagos', 'Medios de pago y boleta'],
+  ['entrega', entrega.despacho ? 'Retiro y despacho' : 'Retiro de pedidos'],
+  ['retracto', 'Derecho a retracto'],
+  ['garantia', 'Garantía, cambios y devoluciones'],
+  ['reservas', 'Reservas de peluquería'],
+  ['datos', 'Datos personales'],
+  ['contacto', 'Consultas y reclamos'],
+];
+
+const textoAbono =
+  reservas.pagoOnline === 'abono'
+    ? `un abono del ${reservas.abonoPorcentaje}% del precio base del servicio`
+    : 'el precio base ("desde") del servicio';
 ---
 
 <Base
-  titulo="Términos y privacidad"
-  descripcion="Información sobre entregas, reservas, precios y datos personales de Huella Verde."
-  noindex
+  titulo="Términos y condiciones"
+  descripcion={`Condiciones de compra, retiro, cambios, devoluciones, reservas de peluquería y privacidad de ${NEGOCIO.nombre}.`}
+  noindex={!terminosPublicables()}
 >
-  <div class="contenedor">
+  <div class="contenedor terminos">
     <header class="encabezado">
-      <h1>Términos y privacidad</h1>
+      <h1>Términos y condiciones</h1>
       <p>
-        Esta página reúne información sobre compras, reservas y datos personales.
-        Algunos puntos aún están pendientes de confirmación.
+        Estas condiciones rigen las compras en la tienda de plantas y accesorios y las reservas
+        de peluquería hechas en este sitio. Al pagar un pedido o una reserva las aceptas, así que
+        te pedimos leerlas con calma. Puedes guardarlas o imprimirlas cuando quieras.
       </p>
+      <p class="actualizado">Última actualización: {fechaActualizacion}</p>
     </header>
 
-    <div class="secciones">
-      <section class="tarjeta-org tarjeta-org--acento">
-        <h2>Entregas</h2>
-        <p class="pendiente">
-          TODO(Anthony): confirmar con Martha si los pedidos se despachan por encomienda o
-          si también se pueden retirar en la peluquería, quién paga el envío y en cuántos
-          días hábiles se entrega.
-        </p>
-      </section>
+    <nav class="indice" aria-labelledby="indice-titulo">
+      <h2 id="indice-titulo">Contenido</h2>
+      <ol>
+        {indice.map(([id, texto]) => <li><a href={`#${id}`}>{texto}</a></li>)}
+      </ol>
+    </nav>
 
-      <section class="tarjeta-org tarjeta-org--acento">
-        <h2>Cambios y devoluciones</h2>
-        <p class="pendiente">
-          TODO(Anthony): confirmar el plazo para solicitar cambios o devoluciones, el
-          estado en que se debe recibir el producto, quién paga el envío de vuelta y cómo
-          se devuelve la plata.
-        </p>
-      </section>
+    <section id="vendedor" aria-labelledby="t-vendedor">
+      <h2 id="t-vendedor">1. Quién vende</h2>
+      <dl class="ficha">
+        <div><dt>Nombre comercial</dt><dd>{NEGOCIO.nombre}</dd></div>
+        {vendedor.razonSocial && <div><dt>Razón social</dt><dd>{vendedor.razonSocial}</dd></div>}
+        {vendedor.rut && <div><dt>RUT</dt><dd>{vendedor.rut}</dd></div>}
+        <div><dt>Dirección</dt><dd>{direccion}</dd></div>
+        <div><dt>Correo</dt><dd><a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a></dd></div>
+        <div><dt>WhatsApp</dt><dd><a href={waLinkConsulta()} rel="noopener">+56 {NEGOCIO.whatsapp}</a></dd></div>
+      </dl>
+    </section>
 
-      <section class="tarjeta-org tarjeta-org--acento">
-        <h2>Cancelación de reservas</h2>
-        <p>
-          Las reservas se pueden cancelar hasta {POLITICAS_RESERVA.cancelacionHoras} horas
-          antes.
-        </p>
-        <p class="pendiente">
-          TODO(Anthony): confirmar qué ocurre con una reserva que se pagó online y luego se
-          cancela.
-        </p>
-      </section>
+    <section id="compras" aria-labelledby="t-compras">
+      <h2 id="t-compras">2. Precios y compras</h2>
+      <ul>
+        <li>Los precios están en pesos chilenos e incluyen todos los impuestos.</li>
+        <li>
+          Las unidades disponibles se muestran en cada producto. Si al confirmar tu pago un
+          producto ya no está disponible, te avisamos y eliges entre cambiarlo por otro o recibir
+          la devolución total de lo pagado.
+        </li>
+        <li>
+          Una vez confirmado el pago te enviamos la confirmación de tu compra por correo o
+          WhatsApp, con el detalle de los productos y el monto pagado.
+        </li>
+        <li>
+          Las fotos e ilustraciones son referenciales: cada planta es un ser vivo y su tamaño,
+          forma y color pueden variar levemente respecto de la imagen.
+        </li>
+      </ul>
+    </section>
 
-      <section class="tarjeta-org tarjeta-org--acento">
-        <h2>Precios desde</h2>
-        <p>{POLITICAS_RESERVA.notaPrecios}</p>
-        <p class="pendiente">
-          TODO(Anthony): confirmar con Martha que este texto describe también la forma en
-          que se informa el valor final antes de comenzar el servicio.
-        </p>
-      </section>
+    <section id="pagos" aria-labelledby="t-pagos">
+      <h2 id="t-pagos">3. Medios de pago y boleta</h2>
+      <ul>
+        <li>
+          <strong>Tarjeta de débito, crédito o prepago</strong>, a través de una plataforma de pago
+          certificada. Los datos de tu tarjeta los ingresas directamente en esa plataforma: nosotros
+          nunca los vemos ni los guardamos.
+        </li>
+        <li>
+          <strong>Transferencia bancaria</strong>. Al elegirla verás los datos de la cuenta y el
+          monto exacto. Tu pedido o reserva queda confirmado cuando verificamos la transferencia en
+          nuestra cuenta; para agilizarlo, envíanos el comprobante por WhatsApp.
+        </li>
+        <li>
+          {
+            TERMINOS.boleta === 'electronica'
+              ? 'Por cada compra o reserva pagada emitimos boleta electrónica, que te enviamos por correo.'
+              : 'Por cada compra o reserva pagada emitimos boleta, que te entregamos junto con tu pedido o al momento del servicio.'
+          }
+        </li>
+      </ul>
+    </section>
 
-      <section class="tarjeta-org tarjeta-org--acento">
-        <h2>Datos personales</h2>
-        <p>
-          Para gestionar reservas y pedidos se pueden solicitar nombre, teléfono, correo,
-          nombre y raza de la mascota, y fotos.
-        </p>
-        <p class="pendiente">
-          TODO(Anthony): confirmar para qué se usa cada dato, si se comparte con terceros y
-          completar el procedimiento para pedir su eliminación escribiendo a
-          <a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a>.
-        </p>
-      </section>
-    </div>
+    <section id="entrega" aria-labelledby="t-entrega">
+      <h2 id="t-entrega">4. {entrega.despacho ? 'Retiro y despacho' : 'Retiro de pedidos'}</h2>
+      {
+        entrega.retiroEnLocal && (
+          <p>
+            <strong>Retiro en el local:</strong> {NEGOCIO.direccion.calle}, {NEGOCIO.direccion.comuna}, en
+            horario de atención. Te avisamos cuando tu pedido esté listo, dentro de{' '}
+            {dias(entrega.retiroDiasHabiles, true)} desde la confirmación del pago. Para retirarlo
+            basta con indicar tu nombre o el número de referencia de la compra.
+          </p>
+        )
+      }
+      {
+        entrega.despacho && (
+          <p>
+            <strong>Despacho a domicilio:</strong>
+            {entrega.despachoComunas && <> disponible en {entrega.despachoComunas}.</>}
+            {' '}Lo coordinamos contigo después del pago y lo entregamos dentro de{' '}
+            {dias(entrega.despachoDiasHabiles, true)}.
+            {entrega.despachoCosto && <> Costo de envío: {entrega.despachoCosto}.</>}
+          </p>
+        )
+      }
+      <p>
+        Las plantas viajan y se entregan con cuidado, pero son sensibles al calor y a los golpes:
+        al recibirlas, revísalas y sácalas del envoltorio lo antes posible.
+      </p>
+    </section>
+
+    <section id="retracto" aria-labelledby="t-retracto">
+      <h2 id="t-retracto">5. Derecho a retracto</h2>
+      <p>
+        Por ser una compra a distancia, tienes <strong>10 días</strong> desde que recibes tu pedido
+        para arrepentirte sin dar explicaciones (artículo 3 bis de la Ley 19.496 sobre Protección de
+        los Derechos de los Consumidores).
+      </p>
+      <ul>
+        <li>
+          El producto debe devolverse sin uso, sin daños causados por ti y con su embalaje,
+          etiquetas y elementos originales en buen estado.
+        </li>
+        <li>
+          {
+            retracto.costoDevolucion === 'cliente'
+              ? 'El envío de vuelta es de tu cargo; también puedes devolverlo en el local sin costo.'
+              : 'El envío de vuelta es de nuestro cargo: lo coordinamos contigo.'
+          }
+        </li>
+        <li>
+          Te devolvemos el total pagado, sin descuentos, dentro de{' '}
+          {dias(pagos.reembolsoDiasHabiles, true)} desde que nos avisas, por el mismo medio de pago
+          que usaste.
+        </li>
+      </ul>
+      {
+        retracto.excluirPlantas && (
+          <p class="destacado">
+            <strong>Las plantas no tienen derecho a retracto.</strong> Son seres vivos que pueden
+            deteriorarse con rapidez, por lo que la ley permite excluirlas. Esto no afecta tu garantía
+            si la planta llega enferma o dañada (ver punto 6).
+          </p>
+        )
+      }
+      {
+        reservas.excluirRetracto && (
+          <p class="destacado">
+            <strong>Las reservas de peluquería no tienen derecho a retracto.</strong> En su lugar
+            puedes cancelarlas o cambiarlas según lo indicado en el punto 7.
+          </p>
+        )
+      }
+    </section>
+
+    <section id="garantia" aria-labelledby="t-garantia">
+      <h2 id="t-garantia">6. Garantía, cambios y devoluciones</h2>
+      <h3>Accesorios</h3>
+      <p>
+        Si un accesorio tiene una falla de fabricación o no cumple lo que se ofreció, tienes una
+        <strong>garantía legal de 6 meses</strong> desde que lo recibes para elegir entre su
+        cambio, su reparación o la devolución de lo pagado, siempre que el daño no se deba a mal
+        uso.
+      </p>
+      {
+        TERMINOS.cambioVoluntarioDias !== null && (
+          <p>
+            Además, si simplemente quieres otro accesorio, puedes cambiarlo dentro de{' '}
+            {dias(TERMINOS.cambioVoluntarioDias)} desde que lo recibes, sin uso y con su embalaje,
+            por otro producto de igual o mayor valor (pagando la diferencia).
+          </p>
+        )
+      }
+      <h3>Plantas</h3>
+      <p>
+        Si tu planta llega enferma, con plagas o dañada, avísanos dentro de{' '}
+        <strong>{dias(plantas.diasReclamo)}</strong> desde que la recibes, con una foto, y te la
+        cambiamos por otra igual o similar o te devolvemos lo pagado.
+      </p>
+      <p>
+        Pasado ese plazo, o si el deterioro se debe a condiciones de cuidado distintas de las
+        indicadas en su ficha (exceso o falta de riego, luz o temperatura), no corresponde cambio ni
+        devolución. Si tienes dudas sobre cómo cuidarla, escríbenos: te ayudamos con gusto.
+      </p>
+      <h3>Cómo pedir un cambio o devolución</h3>
+      <p>
+        Escríbenos por WhatsApp o correo con tu número de referencia y, si aplica, una foto del
+        producto. Lo revisamos y te respondemos con los pasos a seguir. Las devoluciones de dinero
+        se hacen por el mismo medio de pago, dentro de {dias(pagos.reembolsoDiasHabiles, true)}.
+      </p>
+    </section>
+
+    <section id="reservas" aria-labelledby="t-reservas">
+      <h2 id="t-reservas">7. Reservas de peluquería</h2>
+      <ul>
+        <li>
+          Puedes reservar sin pagar o dejar tu hora pagada online. Al pagar online se cobra{' '}
+          {textoAbono}; si tu perro requiere trabajo adicional por su raza o estado del pelaje, la
+          diferencia se informa antes de empezar y se paga en el local.
+        </li>
+        <li>
+          Las horas se reservan con al menos {POLITICAS_RESERVA.anticipacionMinimaHoras} horas de
+          anticipación.
+        </li>
+        <li>
+          <strong>Cancelación o cambio:</strong> puedes cancelar o cambiar tu hora hasta{' '}
+          {POLITICAS_RESERVA.cancelacionHoras} horas antes, avisando por WhatsApp.{' '}
+          {
+            reservas.cancelacionATiempo === 'reembolso'
+              ? 'Si la habías pagado, te devolvemos el total pagado.'
+              : 'Si la habías pagado, eliges entre usar el pago en una nueva hora o recibir la devolución total.'
+          }
+        </li>
+        <li>
+          <strong>Aviso tardío o inasistencia:</strong>{' '}
+          {
+            reservas.inasistencia === 'se-pierde'
+              ? `si cancelas con menos de ${POLITICAS_RESERVA.cancelacionHoras} horas de anticipación o no llegas, el monto pagado no se devuelve, porque esa hora quedó reservada para tu perro.`
+              : `si cancelas con menos de ${POLITICAS_RESERVA.cancelacionHoras} horas de anticipación o no llegas, puedes usar el monto pagado para reagendar una sola vez dentro de los ${reservas.reagendarDentroDias} días siguientes; después de eso no se devuelve.`
+          }
+        </li>
+        <li>
+          Si llegas con más de {reservas.toleranciaAtrasoMin} minutos de atraso, podemos reagendar tu
+          hora; en ese caso se aplica lo indicado para aviso tardío.
+        </li>
+        <li>
+          Si somos nosotros quienes debemos cancelar, te avisamos lo antes posible y eliges entre
+          una nueva hora o la devolución total.
+        </li>
+      </ul>
+    </section>
+
+    <section id="datos" aria-labelledby="t-datos">
+      <h2 id="t-datos">8. Datos personales</h2>
+      <p>
+        Para gestionar tus pedidos y reservas te pedimos nombre, teléfono, correo y, en la
+        peluquería, nombre, raza y tamaño de tu perro. Los usamos solo para confirmar, coordinar y
+        atender tu compra o reserva, y para emitir la boleta.
+      </p>
+      <ul>
+        <li>No vendemos ni cedemos tus datos a terceros con fines comerciales.</li>
+        <li>
+          Los pagos con tarjeta los procesa la plataforma de pago, bajo sus propias medidas de
+          seguridad. La agenda de reservas funciona sobre un servicio externo de calendario que
+          guarda los datos de la reserva.
+        </li>
+        <li>
+          Puedes pedir en cualquier momento acceder a tus datos, corregirlos o eliminarlos
+          escribiendo a <a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a>.
+        </li>
+      </ul>
+    </section>
+
+    <section id="contacto" aria-labelledby="t-contacto">
+      <h2 id="t-contacto">9. Consultas y reclamos</h2>
+      <p>
+        Para cualquier duda, cambio o reclamo, escríbenos por{' '}
+        <a href={waLinkConsulta()} rel="noopener">WhatsApp</a> o a{' '}
+        <a href={`mailto:${NEGOCIO.email}`}>{NEGOCIO.email}</a>, o visítanos en {direccion}.
+        Respondemos dentro del horario de atención. Si no quedas conforme con nuestra respuesta,
+        puedes acudir al Servicio Nacional del Consumidor (<a
+          href="https://www.sernac.cl"
+          rel="noopener">sernac.cl</a
+        >).
+      </p>
+    </section>
   </div>
 </Base>
 
 <style>
+  .terminos {
+    max-width: 75ch;
+  }
+
   .encabezado {
     padding-block: var(--espacio-xl) var(--espacio-l);
-    max-width: 60ch;
 
     & p {
       margin-block-start: var(--espacio-m);
@@ -89,34 +334,88 @@ import { POLITICAS_RESERVA } from '../data/servicios';
     }
   }
 
-  .secciones {
-    display: grid;
-    gap: var(--espacio-m);
+  .actualizado {
+    font-size: var(--texto-s);
   }
 
-  .secciones section {
-    padding: var(--espacio-l);
+  .indice {
+    padding: var(--espacio-m) var(--espacio-l);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m);
+    background: var(--color-superficie);
+
+    & h2 {
+      font-size: var(--texto-base);
+      margin-block-end: var(--espacio-xs);
+    }
+
+    & ol {
+      margin: 0;
+      padding-inline-start: 1.2em;
+    }
+
+    /* Targets táctiles cómodos en móvil */
+    & a {
+      display: inline-block;
+      padding-block: 0.4em;
+    }
+  }
+
+  section {
     padding-block-start: var(--espacio-xl);
+    /* Que el título no quede tapado por el header sticky al usar el índice */
+    scroll-margin-block-start: 6rem;
   }
 
-  .secciones h2 {
+  section h2 {
     font-size: var(--texto-l);
     margin-block-end: var(--espacio-s);
   }
 
-  .secciones p {
-    max-width: 70ch;
+  section h3 {
+    font-size: var(--texto-base);
+    margin-block: var(--espacio-m) var(--espacio-xs);
   }
 
-  .secciones p + p {
+  section p + p,
+  section p + ul,
+  section ul + p {
     margin-block-start: var(--espacio-m);
   }
 
-  /* El amarillo hace visibles los datos que faltan antes de publicar. */
-  .pendiente {
+  section ul {
+    display: grid;
+    gap: var(--espacio-s);
+    padding-inline-start: 1.2em;
+  }
+
+  .ficha {
+    display: grid;
+    gap: var(--espacio-xs);
+    margin: 0;
+
+    /* Etiqueta y valor en columnas alineadas, también a 375 px */
+    & div {
+      display: grid;
+      grid-template-columns: 8.5rem minmax(0, 1fr);
+      gap: 0 var(--espacio-s);
+    }
+
+    & dt {
+      font-weight: 600;
+    }
+
+    & dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  /* Exclusiones de retracto: la ley exige informarlas de forma destacada */
+  .destacado {
     padding: var(--espacio-m);
-    border-inline-start: 4px solid var(--color-acento);
-    background: var(--color-acento-suave);
-    font-style: italic;
+    border-inline-start: 4px solid var(--color-primario);
+    background: var(--color-primario-suave);
+    border-radius: var(--radio-s);
   }
 </style>
