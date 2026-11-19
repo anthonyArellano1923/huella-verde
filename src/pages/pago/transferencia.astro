@@ -1,0 +1,269 @@
+---
+/**
+ * Instrucciones de pago por transferencia (prerender = false).
+ *
+ * Llega desde el carrito con una orden firmada en la URL (ref, p, m, s; ver
+ * lib/transferencia.ts). Si la firma no calza, no se muestra nada: nadie
+ * puede fabricar un enlace con otro monto. Muestra datos bancarios, monto
+ * exacto, referencia e ítems, y el botón "Ya transferí", que avisa a Martha
+ * y abre WhatsApp con la referencia para enviar el comprobante.
+ */
+import Base from '../../layouts/Base.astro';
+import { DATOS_TRANSFERENCIA, NEGOCIO } from '../../data/negocio';
+import { formatCLP } from '../../utils/money';
+import { waLink } from '../../utils/whatsapp';
+import { leerOrdenFirmada, datosTransferenciaCompletos } from '../../lib/transferencia';
+import { itemsDePedido } from '../../lib/pasarela';
+import { ConfigError, esProduccion } from '../../lib/errores';
+
+export const prerender = false;
+
+let orden = null;
+try {
+  orden = leerOrdenFirmada(Object.fromEntries(Astro.url.searchParams));
+} catch (err) {
+  if (!(err instanceof ConfigError)) throw err;
+}
+const disponible = !esProduccion() || datosTransferenciaCompletos();
+const items = orden ? await itemsDePedido(orden.pedido) : null;
+const esReserva = orden?.ref.includes('-RS-') ?? false;
+
+const waComprobante = orden
+  ? waLink(
+      `¡Hola! Hice una transferencia desde la web de ${NEGOCIO.nombre}.\n` +
+        `Referencia: ${orden.ref}\n` +
+        `Monto: ${formatCLP(orden.monto)}\n` +
+        'Te adjunto el comprobante.'
+    )
+  : '';
+
+const filas = [
+  ['Titular', DATOS_TRANSFERENCIA.titular],
+  ['RUT', DATOS_TRANSFERENCIA.rut],
+  ['Banco', DATOS_TRANSFERENCIA.banco],
+  ['Tipo de cuenta', DATOS_TRANSFERENCIA.tipoCuenta],
+  ['N° de cuenta', DATOS_TRANSFERENCIA.numeroCuenta],
+  ['Correo', DATOS_TRANSFERENCIA.email],
+];
+---
+
+<Base titulo="Pagar por transferencia" descripcion="Datos para pagar tu pedido por transferencia bancaria.">
+  <div class="contenedor transferencia">
+    <h1>Pagar por transferencia</h1>
+
+    {
+      orden && disponible ? (
+        <>
+          <ol class="transferencia__pasos">
+            <li>Transfiere <strong>exactamente {formatCLP(orden.monto)}</strong> a la cuenta de abajo.</li>
+            <li>
+              En el comentario o asunto de la transferencia escribe la referencia{' '}
+              <strong>{orden.ref}</strong>.
+            </li>
+            <li>Pulsa “Ya transferí” y envíanos el comprobante por WhatsApp.</li>
+          </ol>
+
+          <dl class="transferencia__datos">
+            <div>
+              <dt>Monto</dt>
+              <dd>
+                {formatCLP(orden.monto)}
+                <button type="button" class="copiar" data-copiar={String(orden.monto)}>Copiar</button>
+              </dd>
+            </div>
+            <div>
+              <dt>Referencia</dt>
+              <dd>
+                {orden.ref}
+                <button type="button" class="copiar" data-copiar={orden.ref}>Copiar</button>
+              </dd>
+            </div>
+            {filas.map(([etiqueta, valor]) => (
+              <div>
+                <dt>{etiqueta}</dt>
+                <dd>
+                  {valor}
+                  <button type="button" class="copiar" data-copiar={valor}>Copiar</button>
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          {items && (
+            <>
+              <h2>Tu pedido</h2>
+              <ul class="transferencia__items">
+                {items.map((i) => (
+                  <li>
+                    {i.cantidad} × {i.titulo} <span>{formatCLP(i.precioUnitario * i.cantidad)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          <p class="transferencia__nota">
+            {esReserva
+              ? 'Tu hora queda confirmada cuando Martha vea la transferencia en su cuenta.'
+              : 'Martha confirma el stock y coordina la entrega cuando vea la transferencia en su cuenta.'}
+          </p>
+
+          <button
+            class="boton boton--whatsapp"
+            type="button"
+            id="ya-transferi"
+            data-wa={waComprobante}
+            data-orden={JSON.stringify({
+              ref: orden.ref,
+              p: Astro.url.searchParams.get('p'),
+              m: Astro.url.searchParams.get('m'),
+              s: Astro.url.searchParams.get('s'),
+            })}
+            data-limpiar-carrito={esReserva ? undefined : ''}
+          >
+            Ya transferí: enviar comprobante por WhatsApp
+          </button>
+        </>
+      ) : orden ? (
+        <p>
+          El pago por transferencia aún no está disponible. Escríbenos por{' '}
+          <a href={waLink(`¡Hola! Quiero pagar por transferencia mi pedido de la web de ${NEGOCIO.nombre}.`)} rel="noopener">
+            WhatsApp
+          </a>{' '}
+          y te ayudamos.
+        </p>
+      ) : (
+        <p>
+          Este enlace de pago no es válido o está incompleto. Vuelve a tu{' '}
+          <a href="/carrito/">carrito</a> y elige “Pagar por transferencia” otra vez.
+        </p>
+      )
+    }
+  </div>
+</Base>
+
+<script>
+  // Botones "Copiar": copian el dato al portapapeles para pegarlo en el banco.
+  document.querySelectorAll<HTMLButtonElement>('[data-copiar]').forEach((boton) => {
+    boton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(boton.dataset.copiar ?? '');
+        boton.textContent = 'Copiado';
+        setTimeout(() => (boton.textContent = 'Copiar'), 1500);
+      } catch {
+        /* sin permiso de portapapeles: el dato igual está visible */
+      }
+    });
+  });
+
+  // "Ya transferí": avisa a Martha (servidor) y abre WhatsApp con la referencia.
+  const yaTransferi = document.getElementById('ya-transferi') as HTMLButtonElement | null;
+  yaTransferi?.addEventListener('click', async () => {
+    yaTransferi.disabled = true;
+    try {
+      await fetch('/api/pago/transferencia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: yaTransferi.dataset.orden,
+      });
+    } catch {
+      /* el aviso por correo es un extra: WhatsApp igual llega a Martha */
+    }
+    if (yaTransferi.dataset.limpiarCarrito !== undefined) {
+      try {
+        localStorage.removeItem('mm-carrito');
+      } catch {
+        /* almacenamiento bloqueado */
+      }
+    }
+    window.location.href = yaTransferi.dataset.wa ?? '/';
+  });
+</script>
+
+<style>
+  .transferencia {
+    padding-block: var(--espacio-xl);
+    max-width: 42rem;
+
+    & h1 {
+      margin-block-end: var(--espacio-l);
+    }
+
+    & h2 {
+      font-size: var(--texto-l);
+      margin-block: var(--espacio-l) var(--espacio-s);
+    }
+  }
+
+  .transferencia__pasos {
+    display: grid;
+    gap: var(--espacio-s);
+    margin: 0 0 var(--espacio-l);
+    padding-inline-start: 1.25rem;
+
+    /* Monto y referencia nunca se parten en dos líneas. */
+    & strong {
+      white-space: nowrap;
+    }
+  }
+
+  .transferencia__datos {
+    display: grid;
+    gap: var(--espacio-s);
+    margin: 0;
+    padding: var(--espacio-l);
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m);
+
+    & div {
+      display: grid;
+      gap: 0.15rem;
+    }
+
+    & dt {
+      font-size: var(--texto-s);
+      color: var(--color-texto-suave);
+    }
+
+    & dd {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--espacio-s);
+      margin: 0;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .copiar {
+    padding: 0.15rem 0.6rem;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-s);
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    font-size: var(--texto-s);
+    font-weight: 400;
+    cursor: pointer;
+  }
+
+  .transferencia__items {
+    display: grid;
+    gap: var(--espacio-xs, 0.25rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    & li {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--espacio-s);
+    }
+  }
+
+  .transferencia__nota {
+    margin-block: var(--espacio-l);
+    color: var(--color-texto-suave);
+  }
+</style>

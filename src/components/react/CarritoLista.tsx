@@ -1,31 +1,44 @@
 /**
- * Isla React: contenido de la página /carrito — lista editable + botón de
- * pago. Al pagar, envía SOLO slugs y cantidades a /api/pago/crear; el
- * servidor recalcula el total real y responde con la URL de la pasarela
- * activa (Webpay o MercadoPago, según PASARELA_PAGO en el servidor).
+ * Isla React: contenido de la página /carrito — lista editable + dos medios
+ * de pago:
+ * - Tarjeta: el servidor responde con la URL de la pasarela activa (Webpay o
+ *   MercadoPago, según PASARELA_PAGO).
+ * - Transferencia: el servidor responde con la URL de /pago/transferencia
+ *   (datos bancarios y referencia única).
+ * En ambos casos se envían SOLO ids y cantidades a /api/pago/crear; el
+ * servidor recalcula el total real.
  */
 import { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $carrito, cambiarCantidad, totalReferencia } from '../../stores/carrito';
+import { $carrito, cambiarCantidad, totalReferencia, urlProducto } from '../../stores/carrito';
 
 const formatCLP = (n: number) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 
+type Medio = 'tarjeta' | 'transferencia';
+
+/** Editable cart list with card and bank-transfer checkout buttons. */
 export default function CarritoLista() {
   const items = useStore($carrito);
-  const [enviando, setEnviando] = useState(false);
+  const [enviando, setEnviando] = useState<Medio | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (items.length === 0) {
     return (
       <p className="carrito-vacio">
-        Tu carrito está vacío. <a href="/ropita/">Ver el catálogo →</a>
+        Tu carrito está vacío. <a href="/">Ver la tienda →</a>
       </p>
     );
   }
 
-  async function pagar() {
-    setEnviando(true);
+  /**
+   * Starts checkout with the chosen method and redirects to the URL the
+   * server returns.
+   *
+   * @param medio - "tarjeta" or "transferencia".
+   */
+  async function pagar(medio: Medio) {
+    setEnviando(medio);
     setError(null);
     try {
       const res = await fetch('/api/pago/crear', {
@@ -33,7 +46,8 @@ export default function CarritoLista() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tipo: 'productos',
-          items: items.map((i) => ({ slug: i.slug, qty: i.qty })),
+          medio,
+          items: items.map((i) => ({ id: i.id, qty: i.qty })),
         }),
       });
       const datos = await res.json();
@@ -41,7 +55,7 @@ export default function CarritoLista() {
       window.location.href = datos.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error inesperado. Intenta de nuevo.');
-      setEnviando(false);
+      setEnviando(null);
     }
   }
 
@@ -49,17 +63,25 @@ export default function CarritoLista() {
     <div className="carrito">
       <ul className="carrito__lista">
         {items.map((item) => (
-          <li key={item.slug}>
+          <li key={item.id}>
             <div>
-              <a href={`/ropita/${item.slug}/`}>{item.nombre}</a>
-              <small> · talla {item.talla}</small>
+              <a href={urlProducto(item.id)}>{item.nombre}</a>
+              {item.detalle && <small> · {item.detalle}</small>}
             </div>
             <div className="carrito__controles">
-              <button type="button" aria-label={`Quitar una unidad de ${item.nombre}`} onClick={() => cambiarCantidad(item.slug, item.qty - 1)}>
+              <button
+                type="button"
+                aria-label={`Quitar una unidad de ${item.nombre}`}
+                onClick={() => cambiarCantidad(item.id, item.qty - 1)}
+              >
                 −
               </button>
               <span aria-live="polite">{item.qty}</span>
-              <button type="button" aria-label={`Agregar una unidad de ${item.nombre}`} onClick={() => cambiarCantidad(item.slug, item.qty + 1)}>
+              <button
+                type="button"
+                aria-label={`Agregar una unidad de ${item.nombre}`}
+                onClick={() => cambiarCantidad(item.id, item.qty + 1)}
+              >
                 +
               </button>
               <strong>{formatCLP(item.precio * item.qty)}</strong>
@@ -78,12 +100,22 @@ export default function CarritoLista() {
         </p>
       )}
 
-      <button className="boton" type="button" disabled={enviando} onClick={pagar}>
-        {enviando ? 'Conectando con el pago seguro…' : 'Pagar ahora (pago seguro)'}
-      </button>
+      <div className="carrito__pagos">
+        <button className="boton" type="button" disabled={enviando !== null} onClick={() => pagar('tarjeta')}>
+          {enviando === 'tarjeta' ? 'Conectando con el pago seguro…' : 'Pagar con tarjeta'}
+        </button>
+        <button
+          className="boton boton--secundario"
+          type="button"
+          disabled={enviando !== null}
+          onClick={() => pagar('transferencia')}
+        >
+          {enviando === 'transferencia' ? 'Preparando datos…' : 'Pagar por transferencia'}
+        </button>
+      </div>
       <p className="carrito__nota">
-        Pago seguro online. Se aceptan tarjetas de débito, crédito y prepago
-        chilenas.
+        Tarjeta: débito, crédito o prepago, en el sitio seguro del medio de pago.
+        Transferencia: te mostramos los datos bancarios y una referencia para tu pedido.
       </p>
     </div>
   );

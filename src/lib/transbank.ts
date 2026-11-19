@@ -14,6 +14,7 @@
 // imports fallan en el server de Vite/Astro).
 import pkg from 'transbank-sdk';
 const { WebpayPlus, Options, IntegrationApiKeys, IntegrationCommerceCodes, Environment } = pkg;
+import { ConfigError } from './errores';
 
 function opciones(): InstanceType<typeof Options> {
   // process.env y no import.meta.env: ver la explicación en pasarela.ts
@@ -27,7 +28,7 @@ function opciones(): InstanceType<typeof Options> {
   // real. Si esto no estuviera, el cliente vería un voucher aprobado y no se
   // cobraría un peso. Es preferible un sitio caído a un sitio que finge cobrar.
   if (!esProduccion && process.env.VERCEL_ENV === 'production') {
-    throw new Error(
+    throw new ConfigError(
       'ABORTADO: Webpay quedaría en ambiente de INTEGRACIÓN (pagos de mentira) ' +
         'en el sitio de producción. Define TBK_ENV=produccion, TBK_COMMERCE_CODE ' +
         'y TBK_API_KEY en Vercel y vuelve a desplegar.'
@@ -36,7 +37,7 @@ function opciones(): InstanceType<typeof Options> {
 
   if (esProduccion) {
     if (!commerceCode || !apiKey) {
-      throw new Error('TBK_ENV=produccion requiere TBK_COMMERCE_CODE y TBK_API_KEY');
+      throw new ConfigError('TBK_ENV=produccion requiere TBK_COMMERCE_CODE y TBK_API_KEY');
     }
     return new Options(commerceCode, apiKey, Environment.Production);
   }
