@@ -6,7 +6,7 @@
  * fila 1 es marca + utilidades y la fila 2 son los dos grupos, sin scroll.
  */
 import { NEGOCIO } from '../data/negocio';
-import CarritoBadge from './react/CarritoBadge';
+import CarritoBadge from './CarritoBadge.astro';
 import LogoHuellaVerde from './LogoHuellaVerde.astro';
 
 const grupos = [
@@ -70,7 +70,7 @@ const esActual = (href: string) => {
       >
         Contacto
       </a>
-      <CarritoBadge client:only="react" />
+      <CarritoBadge />
     </div>
   </div>
 </header>
@@ -247,7 +247,7 @@ const esActual = (href: string) => {
 </style>
 
 <style is:global>
-  /* Estilos de la isla CarritoBadge */
+  /* Estilos del contador del carrito (CarritoBadge.astro) */
   .carrito-badge {
     position: relative;
     /* Target táctil mínimo de 44 px (WCAG 2.5.5) aunque el ícono sea chico */
@@ -274,5 +274,10 @@ const esActual = (href: string) => {
     font-weight: 700;
     text-align: center;
     line-height: 1.4;
+  }
+
+  /* The display rule above would otherwise override the hidden attribute. */
+  .carrito-badge__numero[hidden] {
+    display: none;
   }
 </style>

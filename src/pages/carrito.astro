@@ -5,14 +5,26 @@
  */
 import Base from '../layouts/Base.astro';
 import CarritoLista from '../components/react/CarritoLista';
+import { TERMINOS, resumenEntrega } from '../data/terminos';
 ---
 
 <Base titulo="Tu carrito" descripcion="Revisa tu pedido y paga online de forma segura.">
   <div class="contenedor pagina-carrito">
     <h1>Tu carrito</h1>
-    <CarritoLista client:only="react" />
+    {/* Reserved height: the island renders only on the client (cart lives in
+        localStorage), so without it the footer jumps when the list appears. */}
+    <div class="carrito-isla">
+      <CarritoLista client:only="react" />
+    </div>
+    {/* Ley 19.496 art. 3 bis: the retracto exclusion must be shown before paying. */}
+    {TERMINOS.retracto.excluirPlantas && (
+      <p class="alternativa">
+        Por ser perecibles, las plantas no tienen derecho a retracto.{' '}
+        <a href="/terminos/#garantia">Cambios y devoluciones</a>
+      </p>
+    )}
     <p class="alternativa">
-      La entrega se coordina después del pago: retiro en el local o despacho.
+      {resumenEntrega()} La entrega se coordina después del pago.
     </p>
   </div>
 </Base>
@@ -26,6 +38,10 @@ import CarritoLista from '../components/react/CarritoLista';
     & h1 {
       margin-block-end: var(--espacio-l);
     }
+  }
+
+  .carrito-isla {
+    min-block-size: 12rem;
   }
 
   .carrito-vacio {
@@ -62,9 +78,10 @@ import CarritoLista from '../components/react/CarritoLista';
     gap: var(--espacio-s);
 
     & button {
-      inline-size: 2.2rem;
-      block-size: 2.2rem;
-      border: 1px solid var(--color-borde);
+      /* 44 px touch target (WCAG 2.5.5) and a border with >= 3:1 contrast */
+      inline-size: 2.75rem;
+      block-size: 2.75rem;
+      border: 1px solid var(--color-texto-suave);
       border-radius: var(--radio-s);
       background: var(--color-fondo);
       color: var(--color-texto);

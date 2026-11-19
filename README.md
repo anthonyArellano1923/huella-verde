@@ -1,54 +1,61 @@
-# Peluquería Martha Mella 🐩
+# Huella Verde 🐾🌿
 
-Web de peluquería canina con reservas online (Cal.com) y catálogo de ropita
-tejida a mano. Astro 5 + islas React + CSS moderno, preparada para desplegar
-en Vercel (aún **sin publicar**: ver el estado del proyecto en `docs/`).
+Sitio de Martha Mella con dos negocios diferenciados bajo una misma marca:
 
-## Ramas
+- **Peluquería canina:** servicios, precios y reserva de hora (Cal.com), con
+  opción de dejar la hora pagada online.
+- **Tienda de plantas y accesorios:** maceteros, sustratos, fertilizantes y
+  artículos de cuidado, con carrito y pago online.
 
-- **`main`** — producción. Venta de ropita coordinando **transferencia por
-  WhatsApp** (cero servidor, cero comisión) + botón opcional de **link de
-  pago MercadoPago** por prenda (`linkMercadoPago` en el frontmatter).
-  Servicios se pagan en el local.
-- **`transbank`** — pago online con **Webpay Plus** para productos y reservas
-  (serverless en Vercel; probado E2E en el ambiente de integración).
-- **`mercadopago`** — pago online con **Checkout Pro** para productos y
-  reservas (serverless en Vercel; requiere `MP_ACCESS_TOKEN`, ver
-  `.env.example` de esa rama).
+Astro 5 + islas React + CSS moderno, desplegado en Vercel (funciones
+serverless para los pagos). Aún **sin publicar**: ver `PLAN.md` (local).
+
+## Pagos
+
+Una sola rama, `main`. Medios de pago:
+
+- **Tarjeta:** Webpay Plus (por defecto) o MercadoPago Checkout Pro, detrás
+  de una interfaz común (`src/lib/pasarela.ts`). Se elige con `PASARELA_PAGO`.
+- **Transferencia bancaria directa:** referencia única `HV-PR-…`, comprobante
+  por WhatsApp. Solo se ofrece cuando `src/data/negocio.ts` tiene datos
+  bancarios reales.
+- **Interruptor `PAGOS_ONLINE=on|off`:** en `off` no se cobra con tarjeta y el
+  sitio ofrece WhatsApp.
+
+Las páginas preguntan a `GET /api/pago/estado` qué medios están disponibles.
+Cada cambio de variables en Vercel requiere **Redeploy**, y las credenciales
+van **solo en el entorno Production**.
 
 ## Comandos
 
-| Comando | Acción |
-|---|---|
-| `npm install` | Instalar dependencias |
-| `npm run dev` | Servidor de desarrollo en `localhost:4321` |
-| `npm run build` | Build de producción en `./dist/` |
-| `npm run preview` | Previsualizar el build |
+- `npm install` — instalar dependencias
+- `npm run dev` — servidor de desarrollo en `localhost:4321`
+- `npm run build` — build de producción
+- `npm run preview` — previsualizar el build
 
 ## Dónde se edita cada cosa
 
-| Quiero cambiar… | Archivo |
-|---|---|
-| Nombre, WhatsApp, dirección, horarios | `src/data/negocio.ts` |
-| Servicios, precios, duraciones | `src/data/servicios.ts` |
-| Prendas del catálogo | `src/content/prendas/*.md` (una prenda = un archivo) |
-| Fotos de prendas | `src/assets/prendas/` |
-| Colores y tipografía | `src/styles/tokens.css` |
+- **Nombre, WhatsApp, dirección, horarios, datos bancarios:** `src/data/negocio.ts`
+- **Servicios de peluquería, precios, duraciones:** `src/data/servicios.ts`
+- **Políticas (entrega, retracto, devoluciones, reservas):** `src/data/terminos.ts`
+- **Plantas:** `src/content/plantas/*.md` (un producto = un archivo)
+- **Accesorios:** `src/content/accesorios/*.md`
+- **Ilustraciones de productos:** `src/components/ilustraciones/` (catálogo en `/dev/ilustraciones`)
+- **Colores y tipografía:** `src/styles/tokens.css`
+- **Variables de entorno:** ver `.env.example` (pasarela, credenciales, avisos por correo)
 
-Los datos actuales son **placeholders marcados con `TODO(Anthony)`**
-(la Fase 0 del PLAN.md sigue pendiente: precios reales, fotos, número de
-WhatsApp, cuenta Cal.com y dominio).
+Los datos de ejemplo están marcados con `TODO(Anthony)` hasta que Martha
+entregue los reales. `/ropita` sigue en el código pero fuera del menú y de
+los buscadores.
 
 ## Documentación
 
-Los documentos de planificación, decisión y análisis **no se versionan**:
-viven solo en el computador local (`PLAN.md` y `docs/` están en `.gitignore`).
+Los documentos de planificación y estudio **no se versionan**: viven solo en
+el computador local (`PLAN.md` y `docs/` están en `.gitignore`).
 
-| Archivo (local) | Qué contiene |
-|---|---|
-| `PLAN.md` | Plan maestro por fases |
-| `docs/ESTADO-DEL-PROYECTO.md` | Análisis íntegro del estado, hallazgos y pendientes |
-| `docs/DECISIONES.md` | Decisiones de arquitectura (ADRs) explicadas |
-| `docs/GUIA_AGENDA_PARA_LA_DUEÑA.md` | Guía no técnica de la agenda para Martha |
-| `docs/COMO_FUNCIONAN_LOS_PAGOS.md` | Modelo de cobro y flujo de pasarelas |
-| `docs/BITACORA.md` | Registro crudo de trabajo |
+- `PLAN.md` — plan por fases hasta el lanzamiento
+- `docs/DECISIONES.md` — decisiones de arquitectura (ADR) explicadas
+- `docs/COMO_FUNCIONAN_LOS_PAGOS.md` — flujo de pago, pasarelas y transferencia
+- `docs/GUIA-CALCOM.md` — configuración de la agenda
+- `docs/MANUAL-IMPLEMENTACION.md` — pasos para publicar
+- `docs/REQUISITOS-PAGOS-MARTHA.md` — lo que Martha debe entregar para cobrar online

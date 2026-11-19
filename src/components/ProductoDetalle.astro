@@ -200,6 +200,13 @@ function enlaceWhatsApp(consulta: boolean): string {
   .miga {
     margin-block-end: var(--espacio-m);
     font-size: var(--texto-s);
+
+    /* 44 px touch target without changing the visual spacing */
+    & a {
+      display: inline-block;
+      padding-block: 0.9em;
+      margin-block: -0.9em;
+    }
   }
 
   article {
@@ -290,7 +297,9 @@ function enlaceWhatsApp(consulta: boolean): string {
 
   .enlace-whatsapp {
     display: inline-block;
-    margin-block-start: var(--espacio-s);
+    /* 44 px touch target: padding grows the hit area, negative margin keeps the layout */
+    padding-block: 0.9em;
+    margin-block: calc(var(--espacio-s) - 0.9em) -0.9em;
     font-size: var(--texto-s);
   }
 

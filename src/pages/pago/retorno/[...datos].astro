@@ -15,6 +15,7 @@ import { NEGOCIO } from '../../../data/negocio';
 import { formatCLP } from '../../../utils/money';
 import { waLink } from '../../../utils/whatsapp';
 import { procesarRetorno, type EstadoPago } from '../../../lib/pasarela';
+import { resumenEntrega } from '../../../data/terminos';
 
 export const prerender = false;
 
@@ -94,8 +95,9 @@ const titulos: Record<EstadoPago, string> = {
             <div class="siguiente">
               <h2>¿Y ahora?</h2>
               <p>
-                Guarda pantallazo de esta página. Escríbenos por WhatsApp para
-                coordinar la entrega (retiro en la peluquería o encomienda):
+                Guarda pantallazo de esta página. {resumenEntrega()} Escríbenos
+                por WhatsApp para coordinar la entrega. Las condiciones de cambios
+                y devoluciones están en <a href="/terminos/">Términos y condiciones</a>.
               </p>
               <a class="boton boton--whatsapp" href={waComprobante} rel="noopener">
                 Coordinar entrega por WhatsApp

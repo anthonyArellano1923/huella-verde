@@ -1,0 +1,39 @@
+---
+/**
+ * Cart counter in the header.
+ *
+ * Replaces the former React island: loading React (~59 KB gzip) on every
+ * page only to print a number was the heaviest cost on the site. The link is
+ * rendered on the server with no number, and a tiny script subscribes to the
+ * same nanostores atom used by the cart islands, so the count stays in sync
+ * (also across tabs, thanks to persistentAtom).
+ */
+---
+
+<a class="carrito-badge" href="/carrito/" aria-label="Carrito, 0 productos" data-carrito-badge>
+  <span aria-hidden="true">🛒</span>
+  <span class="carrito-badge__numero" data-carrito-numero hidden></span>
+</a>
+
+<script>
+  import { $carrito } from '../stores/carrito';
+
+  /**
+   * Paints the total number of units in every badge on the page.
+   *
+   * @param items - Current cart items.
+   */
+  function pintar(items: { qty: number }[]) {
+    const cantidad = items.reduce((suma, i) => suma + i.qty, 0);
+    document.querySelectorAll<HTMLAnchorElement>('[data-carrito-badge]').forEach((enlace) => {
+      enlace.setAttribute('aria-label', `Carrito, ${cantidad} productos`);
+      const numero = enlace.querySelector<HTMLElement>('[data-carrito-numero]');
+      if (!numero) return;
+      numero.textContent = String(cantidad);
+      numero.hidden = cantidad === 0;
+    });
+  }
+
+  // subscribe() runs immediately with the stored value and on every change.
+  $carrito.subscribe(pintar);
+</script>
