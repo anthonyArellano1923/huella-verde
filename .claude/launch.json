@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 4321
+    },
+    {
+      "name": "astro-dev-pagos-off",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["PAGOS_ONLINE=off", "npm", "run", "dev", "--", "--port", "4322"],
+      "port": 4322
+    },
+    {
+      "name": "astro-dev-prod-mp-test",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["VERCEL_ENV=production", "PAGOS_SECRETO=prueba-local", "TBK_ENV=produccion", "PASARELA_PAGO=mercadopago", "MP_ACCESS_TOKEN=TEST-123", "npm", "run", "dev", "--", "--port", "4323"],
+      "port": 4323
     }
   ]
 }

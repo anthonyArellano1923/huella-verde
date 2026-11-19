@@ -9,7 +9,7 @@
  * Respuestas: 200 { ok: true } · 400 cuerpo o firma inválidos.
  */
 import type { APIRoute } from 'astro';
-import { leerOrdenFirmada } from '../../../lib/transferencia';
+import { exigirTransferenciaDisponible, leerOrdenFirmada } from '../../../lib/transferencia';
 import { avisarPago } from '../../../lib/avisos';
 import { itemsDePedido } from '../../../lib/pasarela';
 import { ConfigError } from '../../../lib/errores';
@@ -31,6 +31,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    // Sin datos bancarios reales no hay transferencia que avisar (503).
+    exigirTransferenciaDisponible();
     const orden = leerOrdenFirmada(cuerpo as Record<string, unknown>);
     if (!orden) return json({ error: 'Orden de transferencia inválida.' }, 400);
 

@@ -7,21 +7,63 @@
  *   (datos bancarios y referencia única).
  * En ambos casos se envían SOLO ids y cantidades a /api/pago/crear; el
  * servidor recalcula el total real.
+ *
+ * Qué botones se muestran lo decide el servidor (/api/pago/estado): el
+ * interruptor PAGOS_ONLINE y los datos bancarios son de runtime y esta página
+ * es estática. Mientras se consulta, o si la consulta falla, o si no hay
+ * ningún medio disponible, se ofrece pedir por WhatsApp con el detalle.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $carrito, cambiarCantidad, totalReferencia, urlProducto } from '../../stores/carrito';
+import { $carrito, cambiarCantidad, totalReferencia, urlProducto, type ItemCarrito } from '../../stores/carrito';
+import { waLink } from '../../utils/whatsapp';
 
 const formatCLP = (n: number) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 
 type Medio = 'tarjeta' | 'transferencia';
 
+/** Payment methods the server says are available (null while loading). */
+type Medios = Record<Medio, boolean>;
+
+/** Fallback when the status endpoint fails: offer WhatsApp only. */
+const SIN_MEDIOS: Medios = { tarjeta: false, transferencia: false };
+
+/**
+ * Builds the WhatsApp link with the cart detail and reference total.
+ *
+ * @param items - Current cart items.
+ * @returns wa.me link with a pre-filled order message.
+ */
+function waPedido(items: ItemCarrito[]): string {
+  const lineas = items.map(
+    (i) => `• ${i.qty} × ${i.nombre}${i.detalle ? ` (${i.detalle})` : ''} — ${formatCLP(i.precio * i.qty)}`
+  );
+  return waLink(
+    ['¡Hola! Quiero hacer este pedido desde la web:', '', ...lineas, '', `Total: ${formatCLP(totalReferencia(items))}`, '', '¿Cómo coordinamos el pago y la entrega?'].join('\n')
+  );
+}
+
 /** Editable cart list with card and bank-transfer checkout buttons. */
 export default function CarritoLista() {
   const items = useStore($carrito);
   const [enviando, setEnviando] = useState<Medio | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [medios, setMedios] = useState<Medios | null>(null);
+
+  // Una consulta al cargar: qué medios de pago ofrece hoy el servidor.
+  useEffect(() => {
+    let vigente = true;
+    fetch('/api/pago/estado', { cache: 'no-store' })
+      .then((r) => (r.ok ? (r.json() as Promise<Medios>) : SIN_MEDIOS))
+      .catch(() => SIN_MEDIOS)
+      .then((m) => {
+        if (vigente) setMedios({ tarjeta: m.tarjeta === true, transferencia: m.transferencia === true });
+      });
+    return () => {
+      vigente = false;
+    };
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -100,23 +142,50 @@ export default function CarritoLista() {
         </p>
       )}
 
-      <div className="carrito__pagos">
-        <button className="boton" type="button" disabled={enviando !== null} onClick={() => pagar('tarjeta')}>
-          {enviando === 'tarjeta' ? 'Conectando con el pago seguro…' : 'Pagar con tarjeta'}
-        </button>
-        <button
-          className="boton boton--secundario"
-          type="button"
-          disabled={enviando !== null}
-          onClick={() => pagar('transferencia')}
-        >
-          {enviando === 'transferencia' ? 'Preparando datos…' : 'Pagar por transferencia'}
-        </button>
-      </div>
-      <p className="carrito__nota">
-        Tarjeta: débito, crédito o prepago, en el sitio seguro del medio de pago.
-        Transferencia: te mostramos los datos bancarios y una referencia para tu pedido.
-      </p>
+      {medios === null ? (
+        <p className="carrito__nota" aria-live="polite">
+          Cargando medios de pago…
+        </p>
+      ) : medios.tarjeta || medios.transferencia ? (
+        <>
+          <div className="carrito__pagos">
+            {medios.tarjeta && (
+              <button className="boton" type="button" disabled={enviando !== null} onClick={() => pagar('tarjeta')}>
+                {enviando === 'tarjeta' ? 'Conectando con el pago seguro…' : 'Pagar con tarjeta'}
+              </button>
+            )}
+            {medios.transferencia && (
+              <button
+                className={medios.tarjeta ? 'boton boton--secundario' : 'boton'}
+                type="button"
+                disabled={enviando !== null}
+                onClick={() => pagar('transferencia')}
+              >
+                {enviando === 'transferencia' ? 'Preparando datos…' : 'Pagar por transferencia'}
+              </button>
+            )}
+          </div>
+          <p className="carrito__nota">
+            {medios.tarjeta &&
+              'Tarjeta: débito, crédito o prepago, en el sitio seguro del medio de pago. '}
+            {medios.transferencia &&
+              'Transferencia: te mostramos los datos bancarios y una referencia para tu pedido. '}
+            ¿Prefieres coordinar? <a href={waPedido(items)} rel="noopener">Pide por WhatsApp</a>.
+          </p>
+        </>
+      ) : (
+        <>
+          <div className="carrito__pagos">
+            <a className="boton boton--whatsapp" href={waPedido(items)} rel="noopener">
+              Pedir por WhatsApp
+            </a>
+          </div>
+          <p className="carrito__nota">
+            El pago online no está disponible en este momento. Envíanos tu pedido por
+            WhatsApp y coordinamos el pago y la entrega.
+          </p>
+        </>
+      )}
     </div>
   );
 }

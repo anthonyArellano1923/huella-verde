@@ -12,19 +12,23 @@ import Base from '../../layouts/Base.astro';
 import { DATOS_TRANSFERENCIA, NEGOCIO } from '../../data/negocio';
 import { formatCLP } from '../../utils/money';
 import { waLink } from '../../utils/whatsapp';
-import { leerOrdenFirmada, datosTransferenciaCompletos } from '../../lib/transferencia';
+import { leerOrdenFirmada, transferenciaDisponible } from '../../lib/transferencia';
 import { itemsDePedido } from '../../lib/pasarela';
-import { ConfigError, esProduccion } from '../../lib/errores';
+import { ConfigError } from '../../lib/errores';
 
 export const prerender = false;
 
+// Sin datos bancarios reales (placeholders en negocio.ts) la página no lee
+// la orden ni muestra datos: solo la alternativa por WhatsApp.
+const disponible = transferenciaDisponible();
 let orden = null;
-try {
-  orden = leerOrdenFirmada(Object.fromEntries(Astro.url.searchParams));
-} catch (err) {
-  if (!(err instanceof ConfigError)) throw err;
+if (disponible) {
+  try {
+    orden = leerOrdenFirmada(Object.fromEntries(Astro.url.searchParams));
+  } catch (err) {
+    if (!(err instanceof ConfigError)) throw err;
+  }
 }
-const disponible = !esProduccion() || datosTransferenciaCompletos();
 const items = orden ? await itemsDePedido(orden.pedido) : null;
 const esReserva = orden?.ref.includes('-RS-') ?? false;
 
@@ -37,7 +41,8 @@ const waComprobante = orden
     )
   : '';
 
-const filas = [
+// Solo se arma con datos reales: con placeholders queda vacía.
+const filas = !disponible ? [] : [
   ['Titular', DATOS_TRANSFERENCIA.titular],
   ['RUT', DATOS_TRANSFERENCIA.rut],
   ['Banco', DATOS_TRANSFERENCIA.banco],
@@ -52,7 +57,7 @@ const filas = [
     <h1>Pagar por transferencia</h1>
 
     {
-      orden && disponible ? (
+      orden ? (
         <>
           <ol class="transferencia__pasos">
             <li>Transfiere <strong>exactamente {formatCLP(orden.monto)}</strong> a la cuenta de abajo.</li>
@@ -124,7 +129,7 @@ const filas = [
             Ya transferí: enviar comprobante por WhatsApp
           </button>
         </>
-      ) : orden ? (
+      ) : !disponible ? (
         <p>
           El pago por transferencia aún no está disponible. Escríbenos por{' '}
           <a href={waLink(`¡Hola! Quiero pagar por transferencia mi pedido de la web de ${NEGOCIO.nombre}.`)} rel="noopener">
