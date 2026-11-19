@@ -35,7 +35,7 @@ const prendas = defineCollection({
     }),
 });
 
-/* ─────────────────────────── Tienda de plantas ─────────────────────────── */
+/* ─────────────────────────── Plant shop ─────────────────────────── */
 
 /**
  * Plant illustration ids. The real SVGs live in
@@ -80,19 +80,19 @@ export type IlustracionId = (typeof ILUSTRACIONES)[number];
 function camposProducto(image: SchemaContext['image']) {
   return {
     nombre: z.string(),
-    /** Gancho de venta en 1-2 frases; el detalle largo va en el cuerpo del .md. */
+    /** One or two selling sentences; longer copy goes in the .md body. */
     descripcion: z.string(),
-    /** Precio en pesos chilenos, entero y sin puntos: 12990. */
+    /** Price in Chilean pesos, integer without separators: 12990. */
     precio: z.number().int().positive(),
-    /** Unidades disponibles. 0 = agotado (el producto se sigue mostrando). */
+    /** Units available. 0 = sold out (the product is still listed). */
     stock: z.number().int().min(0).default(1),
-    /** true = producto de ejemplo, aún no es parte del catálogo real. */
+    /** true = sample product, not yet part of the real catalog. */
     generico: z.boolean().default(false),
-    /** Foto real (en src/assets/tienda/). Si existe, reemplaza a la ilustración. */
+    /** Real photo (in src/assets/tienda/). When present it replaces the illustration. */
     foto: image().optional(),
-    /** Texto alternativo: describe la foto o, si no hay, la ilustración. */
+    /** Alt text: describes the photo or, if there is none, the illustration. */
     fotoAlt: z.string(),
-    /** Destacados aparecen primero en el listado. */
+    /** Featured products are listed first. */
     destacado: z.boolean().default(false),
   };
 }
@@ -103,22 +103,22 @@ const plantas = defineCollection({
     z.object({
       ...camposProducto(image),
       ilustracion: z.enum(ILUSTRACIONES_PLANTAS),
-      /** Nombre científico, sin itálicas (la página las aplica). */
+      /** Scientific name, plain text (pages apply the italics). */
       nombreCientifico: z.string(),
       /**
-       * Familia botánica. Conecta la planta con las advertencias de los
-       * accesorios (p. ej. Proteaceae → fertilizantes con fósforo).
+       * Botanical family. Links the plant to accessory warnings
+       * (e.g. Proteaceae → avoid phosphorus fertilizers).
        */
       familia: z.string().optional(),
       luz: z.enum(['sombra', 'media-sombra', 'sol-indirecto', 'pleno-sol']),
       riego: z.enum(['bajo', 'moderado', 'alto']),
       dificultad: z.enum(['facil', 'media', 'experta']),
       /**
-       * true solo si hay evidencia confiable de que no es tóxica para perros
-       * y gatos. Ante la duda: false y lenguaje de precaución en el texto.
+       * true only with reliable evidence that it is non-toxic to dogs and
+       * cats. When in doubt: false, plus cautious wording in the body.
        */
       petFriendly: z.boolean(),
-      /** true = nativa de Chile. */
+      /** true = native to Chile. */
       nativa: z.boolean(),
     }),
 });
@@ -130,9 +130,9 @@ const accesorios = defineCollection({
       ...camposProducto(image),
       ilustracion: z.enum(ILUSTRACIONES_ACCESORIOS),
       categoria: z.enum(['macetero', 'sustrato', 'fertilizante', 'suplemento', 'cuidado', 'herramienta']),
-      /** true = apto para nativas chilenas en general (ver advertencias). */
+      /** true = suitable for Chilean native plants in general (see warnings). */
       aptoNativas: z.boolean(),
-      /** Avisos de compatibilidad o seguridad, una frase cada uno. */
+      /** Compatibility or safety notices, one sentence each. */
       advertencias: z.array(z.string()).default([]),
     }),
 });
