@@ -1,0 +1,22 @@
+---
+import Maceta from './Maceta.astro';
+// Heart leaf whose tip is the attachment point (origin).
+const CORAZON = 'M0 0 C-9 -3 -11 -12 -5 -15 C-2 -16 0 -13 0 -12 C0 -13 2 -16 5 -15 C11 -12 9 -3 0 0 Z';
+const hojas = [
+  [58, 33, 175, 'ilus-hoja'],
+  [57, 50, -60, 'ilus-hoja-2'],
+  [40, 50, 20, 'ilus-hoja'],
+  [32, 66, -20, 'ilus-hoja-2'],
+  [34, 84, 10, 'ilus-hoja'],
+  [86, 52, -20, 'ilus-hoja'],
+  [88, 68, 25, 'ilus-hoja-2'],
+  [86, 86, -8, 'ilus-hoja'],
+  [66, 50, 70, 'ilus-hoja-clara'],
+] as const;
+---
+
+<path d="M54 70 C44 44 32 50 32 72 C32 84 34 92 34 98" />
+<path d="M66 70 C74 46 88 50 88 72 C88 86 86 92 86 98" />
+<path d="M60 70 C58 56 62 44 58 33" />
+{hojas.map(([x, y, r, c]) => <path class={c} d={CORAZON} transform={`translate(${x} ${y}) rotate(${r})`} />)}
+<Maceta />

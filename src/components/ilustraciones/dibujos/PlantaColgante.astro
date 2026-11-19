@@ -1,0 +1,26 @@
+---
+import Cuerdas from './Cuerdas.astro';
+const CORAZON = 'M0 0 C-9 -3 -11 -12 -5 -15 C-2 -16 0 -13 0 -12 C0 -13 2 -16 5 -15 C11 -12 9 -3 0 0 Z';
+const hojas = [
+  [40, 78, 15, 'ilus-hoja'],
+  [36, 92, -10, 'ilus-hoja-2'],
+  [34, 104, 10, 'ilus-hoja'],
+  [82, 76, -15, 'ilus-hoja'],
+  [86, 90, 12, 'ilus-hoja-2'],
+  [84, 102, -8, 'ilus-hoja'],
+  [62, 82, 8, 'ilus-hoja-clara'],
+] as const;
+---
+
+<Cuerdas rimY={56} />
+<!-- Trailing vines behind the pot -->
+<path d="M44 66 C36 74 38 90 34 104" />
+<path d="M78 66 C86 74 84 88 84 104" />
+<path d="M60 70 C62 76 62 80 62 82" />
+{hojas.map(([x, y, r, c]) => <path class={c} d={CORAZON} transform={`translate(${x} ${y}) rotate(${r})`} />)}
+<!-- Leaves peeking above the rim -->
+<ellipse class="ilus-hoja" cx="48" cy="52" rx="4" ry="8" transform="rotate(-35 48 52)" />
+<ellipse class="ilus-hoja" cx="72" cy="52" rx="4" ry="8" transform="rotate(35 72 52)" />
+<ellipse class="ilus-hoja-2" cx="60" cy="49" rx="4" ry="9" />
+<path class="ilus-terracota" d="M40 58 H80 C80 76 72 84 60 84 C48 84 40 76 40 58 Z" />
+<rect class="ilus-terracota" x="36" y="54" width="48" height="8" rx="3" />

@@ -1,0 +1,20 @@
+---
+import Maceta from './Maceta.astro';
+// Heart-shaped leaf with splits, tip up, origin at the stem attachment.
+const HOJA = 'M0 -2 C-10 0 -16 -10 -13 -19 C-10 -25 -4 -27 0 -30 C4 -27 10 -25 13 -19 C16 -10 10 0 0 -2 Z';
+const CORTES = 'M-13 -16 L-6 -15 M-12 -9 L-6 -10 M13 -16 L6 -15 M12 -9 L6 -10 M0 -2 V-27';
+const hojas = [
+  { t: 'translate(36 60) rotate(-38)', c: 'ilus-hoja-2' },
+  { t: 'translate(84 58) rotate(38)', c: 'ilus-hoja-2' },
+  { t: 'translate(60 48)', c: 'ilus-hoja' },
+];
+---
+
+<path d="M60 70 Q44 70 36 60 M60 70 Q76 70 84 58 M60 70 V48" />
+{hojas.map((h) => (
+  <g transform={h.t}>
+    <path class={h.c} d={HOJA} />
+    <path d={CORTES} class="ilus-fino" />
+  </g>
+))}
+<Maceta />

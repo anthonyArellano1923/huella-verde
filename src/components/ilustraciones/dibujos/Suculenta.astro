@@ -1,0 +1,11 @@
+---
+import Maceta from './Maceta.astro';
+// Rosette: every leaf is the same ellipse rotated around the pot centre.
+const traseras = [-68, 68, -40, 40];
+const delanteras = [-16, 16];
+---
+
+{traseras.map((r) => <ellipse class="ilus-hoja-2" cx="60" cy="53" rx="6.5" ry="14" transform={`rotate(${r} 60 68)`} />)}
+{delanteras.map((r) => <ellipse class="ilus-hoja" cx="60" cy="53" rx="6.5" ry="14" transform={`rotate(${r} 60 68)`} />)}
+<ellipse class="ilus-hoja-clara" cx="60" cy="54" rx="6" ry="14" />
+<Maceta />
