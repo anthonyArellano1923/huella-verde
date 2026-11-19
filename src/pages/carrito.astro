@@ -10,7 +10,7 @@ import CarritoLista from '../components/react/CarritoLista';
 <Base titulo="Tu carrito" descripcion="Revisa tu pedido y paga online de forma segura.">
   <div class="contenedor pagina-carrito">
     <h1>Tu carrito</h1>
-    <CarritoLista client:load />
+    <CarritoLista client:only="react" />
     <p class="alternativa">
       La entrega se coordina después del pago: retiro en el local o despacho.
     </p>
