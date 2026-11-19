@@ -19,6 +19,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Desde 48rem el header es sticky (Header.astro): sin este margen, los saltos
+   a anclas (#categoría, "Saltar al contenido") y el foco por teclado quedan
+   tapados bajo él. 140px mide el header a 768px, su alto máximo. */
+@media (width >= 48rem) {
+  html {
+    scroll-padding-block-start: 9rem;
+  }
+}
+
 body {
   font-family: var(--fuente-texto);
   font-size: var(--texto-base);
@@ -127,11 +136,15 @@ button {
     }
   }
 
+  /* El verde WhatsApp es fijo en ambos temas: el texto también debe serlo
+     (y en :hover, que si no hereda el texto-invertido de .boton:hover). */
   &.boton--whatsapp {
     background: var(--color-whatsapp);
+    color: var(--color-texto-sobre-color);
 
     &:hover {
       background: oklch(from var(--color-whatsapp) calc(l - 0.08) c h);
+      color: var(--color-texto-sobre-color);
     }
   }
 }

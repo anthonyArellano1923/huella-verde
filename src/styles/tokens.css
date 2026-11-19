@@ -33,6 +33,10 @@
   /* Verde WhatsApp oscurecido: el oficial (~L 0.65) no alcanza contraste AA
      4.5:1 con texto blanco en botones. */
   --color-whatsapp: oklch(0.52 0.14 150);
+  /* Texto sobre fondos saturados que NO cambian con el tema (WhatsApp, error).
+     No se redefine en oscuro: `--color-texto-invertido` pasa a casi negro y
+     sobre esos fondos medios caería bajo 4.5:1. Blanco da ≥5.1:1 en ambos. */
+  --color-texto-sobre-color: oklch(0.99 0.004 165);
 
   /* — Tipografía — sistema, sin webfonts: carga instantánea en móvil */
   /* La marca (logo en el header) usa siempre la misma fuente, en cualquier
