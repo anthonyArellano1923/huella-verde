@@ -1,21 +1,36 @@
 /**
- * Isla React: botón "Agregar al carrito" en la página de detalle de prenda.
- * Se hidrata con client:load; el resto de la página sigue siendo HTML puro.
+ * Isla React: botón "Agregar al carrito" en la página de detalle de un
+ * producto (prenda, planta o accesorio). Se hidrata con client:load; el
+ * resto de la página sigue siendo HTML puro.
+ *
+ * Contrato con el catálogo:
+ * - `slug` acepta el id completo "<coleccion>/<slug>" (p. ej. "plantas/cinta")
+ *   o solo el slug; en ese caso se usa `coleccion` (por defecto "prendas",
+ *   para que /ropita siga funcionando sin cambios).
+ * - `talla` es opcional; "única" u omitida no se muestra en el carrito.
  */
 import { useStore } from '@nanostores/react';
 import { $carrito, agregarAlCarrito } from '../../stores/carrito';
 
 interface Props {
   slug: string;
+  coleccion?: 'prendas' | 'plantas' | 'accesorios';
   nombre: string;
-  talla: string;
+  talla?: string;
   precio: number;
   stock: number;
 }
 
-export default function BotonAgregarCarrito({ slug, nombre, talla, precio, stock }: Props) {
+/**
+ * Add-to-cart button that respects the available stock.
+ *
+ * @param props - Product data (see the contract above).
+ */
+export default function BotonAgregarCarrito({ slug, coleccion = 'prendas', nombre, talla, precio, stock }: Props) {
+  const id = slug.includes('/') ? slug : `${coleccion}/${slug}`;
+  const detalle = talla && talla !== 'única' ? `talla ${talla}` : undefined;
   const items = useStore($carrito);
-  const enCarrito = items.find((i) => i.slug === slug)?.qty ?? 0;
+  const enCarrito = items.find((i) => i.id === id)?.qty ?? 0;
   const sinStock = enCarrito >= stock;
 
   return (
@@ -24,7 +39,7 @@ export default function BotonAgregarCarrito({ slug, nombre, talla, precio, stock
         className="boton"
         type="button"
         disabled={sinStock}
-        onClick={() => agregarAlCarrito({ slug, nombre, talla, precio })}
+        onClick={() => agregarAlCarrito({ id, nombre, detalle, precio })}
       >
         {sinStock ? 'No quedan más unidades' : 'Agregar al carrito 🛒'}
       </button>
