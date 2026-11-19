@@ -24,21 +24,31 @@ export type PagoMP = Awaited<ReturnType<Payment['get']>>;
  */
 function getClient(): MercadoPagoConfig {
   // process.env y no import.meta.env: ver la explicación en pasarela.ts.
-  const accessToken = process.env.MP_ACCESS_TOKEN;
+  // trim(): un espacio pegado al copiar desde el panel de Vercel no debe
+  // contar como token válido ni esconder el prefijo TEST-.
+  const accessToken = (process.env.MP_ACCESS_TOKEN ?? '').trim();
   if (!accessToken) {
-    throw new ConfigError('Falta MP_ACCESS_TOKEN (pago con MercadoPago no configurado).');
+    throw new ConfigError(
+      esProduccion()
+        ? 'ABORTADO: falta MP_ACCESS_TOKEN en el sitio de producción (PASARELA_PAGO=mercadopago).'
+        : 'Falta MP_ACCESS_TOKEN (pago con MercadoPago no configurado).'
+    );
   }
-  // Red de seguridad, igual que con Webpay: un token de prueba en el sitio
-  // real mostraría pagos "aprobados" sin cobrar un peso.
-  if (esProduccion() && accessToken.startsWith('TEST-')) {
-    throw new ConfigError('ABORTADO: MP_ACCESS_TOKEN de PRUEBA en el sitio de producción.');
+  // Red de seguridad, igual que con Webpay (transbank.ts): un token de prueba
+  // en el sitio real mostraría pagos "aprobados" sin cobrar un peso. Es
+  // preferible un 503 a un sitio que finge cobrar.
+  if (esProduccion() && accessToken.toUpperCase().startsWith('TEST-')) {
+    throw new ConfigError(
+      'ABORTADO: MP_ACCESS_TOKEN de PRUEBA (TEST-…) en el sitio de producción. ' +
+        'Define el token productivo APP_USR-… solo en Vercel (Production) y vuelve a desplegar.'
+    );
   }
   return new MercadoPagoConfig({ accessToken, options: { timeout: 8000 } });
 }
 
 /** True when MercadoPago credentials exist (used by the webhook). */
 export function mpConfigurado(): boolean {
-  return Boolean(process.env.MP_ACCESS_TOKEN);
+  return Boolean(process.env.MP_ACCESS_TOKEN?.trim());
 }
 
 /** Cliente de preferencias (crear el "carrito" que MP muestra al pagar). */

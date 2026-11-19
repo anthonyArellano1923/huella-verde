@@ -13,19 +13,34 @@
  * Respuestas:
  *   200 { url, referencia }  → el front redirige a `url`
  *   400 pedido mal formado · 409 sin stock suficiente
- *   503 pago no configurado (faltan credenciales o datos bancarios)
+ *   503 pago no disponible: interruptor PAGOS_ONLINE=off (tarjeta), faltan
+ *       credenciales o datos bancarios
  *   502 la pasarela no respondió
  */
 import type { APIRoute } from 'astro';
 import { getPasarela, generarReferencia } from '../../../lib/pasarela';
 import { ErrorPedido, codificarPedido, parsearPedido, resolverPedido } from '../../../lib/pedido';
-import { exigirTransferenciaDisponible, urlTransferencia } from '../../../lib/transferencia';
+import {
+  exigirTransferenciaDisponible,
+  transferenciaDisponible,
+  urlTransferencia,
+} from '../../../lib/transferencia';
+import { interruptorPagosOnline } from '../../../lib/disponibilidad';
 import { ConfigError } from '../../../lib/errores';
 
 export const prerender = false;
 
 const json = (cuerpo: object, status = 200) =>
   new Response(JSON.stringify(cuerpo), { status, headers: { 'Content-Type': 'application/json' } });
+
+/**
+ * Customer-facing 503 message when card payment is unavailable. It only
+ * suggests transfer when transfer can actually be offered.
+ */
+const mensajeTarjetaNoDisponible = () =>
+  transferenciaDisponible()
+    ? 'El pago con tarjeta no está disponible en este momento. Puedes pagar por transferencia o escribirnos por WhatsApp.'
+    : 'El pago online no está disponible en este momento. Escríbenos por WhatsApp y coordinamos el pago.';
 
 export const POST: APIRoute = async ({ request, url }) => {
   let cuerpo: unknown;
@@ -38,6 +53,12 @@ export const POST: APIRoute = async ({ request, url }) => {
   const medio = (cuerpo as { medio?: unknown } | null)?.medio ?? 'tarjeta';
   if (medio !== 'tarjeta' && medio !== 'transferencia') {
     return json({ error: 'medio debe ser "tarjeta" o "transferencia".' }, 400);
+  }
+
+  // Interruptor de apagado: se revisa ANTES de tocar catálogo o pasarela,
+  // para productos y reservas por igual.
+  if (medio === 'tarjeta' && !interruptorPagosOnline()) {
+    return json({ error: mensajeTarjetaNoDisponible() }, 503);
   }
 
   const pasarela = medio === 'tarjeta' ? getPasarela() : null;
@@ -71,7 +92,7 @@ export const POST: APIRoute = async ({ request, url }) => {
           error:
             medio === 'transferencia'
               ? 'El pago por transferencia aún no está disponible. Escríbenos por WhatsApp.'
-              : 'El pago online aún no está disponible. Escríbenos por WhatsApp o paga por transferencia.',
+              : mensajeTarjetaNoDisponible(),
         },
         503
       );

@@ -16,22 +16,28 @@
  * datos); Martha confirma disponibilidad al recibir el comprobante.
  */
 import { DATOS_TRANSFERENCIA } from '../data/negocio';
-import { ConfigError, esProduccion } from './errores';
+import { ConfigError } from './errores';
 import { firmar, verificarFirma } from './firma';
 
-/** True when every bank field has real data (no TODO placeholders left). */
-export function datosTransferenciaCompletos(): boolean {
-  return Object.values(DATOS_TRANSFERENCIA).every((v) => v.trim() !== '' && !v.includes('TODO'));
+/**
+ * Single source of truth for "can we offer bank transfer?": true only when
+ * every bank field in negocio.ts has real data (no empty field, no TODO
+ * placeholder). Applies in EVERY environment (local, Preview, Production),
+ * so the customer never sees placeholder text or a fake account.
+ *
+ * @returns true when bank transfer can be offered.
+ */
+export function transferenciaDisponible(): boolean {
+  return Object.values(DATOS_TRANSFERENCIA).every((v) => v.trim() !== '' && !/TODO/i.test(v));
 }
 
 /**
- * Guards the transfer method: in production it refuses to run with
- * placeholder bank data, so nobody transfers to a fake account.
+ * Guards the transfer method: refuses to run while bank data is placeholder.
  *
- * @throws ConfigError when bank data is incomplete in production.
+ * @throws ConfigError when bank data is incomplete.
  */
 export function exigirTransferenciaDisponible(): void {
-  if (esProduccion() && !datosTransferenciaCompletos()) {
+  if (!transferenciaDisponible()) {
     throw new ConfigError('Faltan los datos bancarios reales en src/data/negocio.ts.');
   }
 }

@@ -23,6 +23,7 @@
 import type { APIRoute } from 'astro';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { mpConfigurado, mpPayment } from '../../../lib/mercadopago';
+import { ConfigError } from '../../../lib/errores';
 import { problemaConPago } from '../../../lib/pasarelas/mercadopago';
 import { avisarPago } from '../../../lib/avisos';
 import { itemsDePedido } from '../../../lib/pasarela';
@@ -87,6 +88,13 @@ export const POST: APIRoute = async ({ request, url }) => {
       });
     }
   } catch (err) {
+    if (err instanceof ConfigError) {
+      // Token de PRUEBA en producción (o similar): no se verifica nada con
+      // él. Se responde 500 igual para que MP reintente y el aviso llegue
+      // cuando se corrija la variable en Vercel y se vuelva a desplegar.
+      console.error(`[webhook MP] CONFIGURACIÓN INVÁLIDA, pago ${dataId} sin verificar: ${err.message}`);
+      return new Response('retry', { status: 500 });
+    }
     console.error('[webhook MP] error verificando pago:', err);
     // 500 → MP reintenta la notificación más tarde.
     return new Response('retry', { status: 500 });

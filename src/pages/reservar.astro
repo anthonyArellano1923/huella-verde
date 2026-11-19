@@ -14,7 +14,7 @@ import Base from '../layouts/Base.astro';
 import { NEGOCIO } from '../data/negocio';
 import { SERVICIOS, TAMANOS, DURACION_SERVICIO_MIN, POLITICAS_RESERVA } from '../data/servicios';
 import { formatCLP } from '../utils/money';
-import { waLinkReserva } from '../utils/whatsapp';
+import { waLink, waLinkReserva } from '../utils/whatsapp';
 
 // Datos que necesita el script del cliente, serializados una sola vez.
 const datosCliente = {
@@ -83,18 +83,28 @@ const datosCliente = {
       {/* El script rellena esto: "Baño completo, perro pequeño: $12.000, ~45 min" */}
     </p>
 
-    <aside class="pagar-online">
+    {/*
+      El pago online depende de variables de runtime (PAGOS_ONLINE,
+      credenciales) que esta página estática no conoce: el script consulta
+      /api/pago/estado y recién ahí muestra el botón de pago o, si no está
+      disponible, el enlace a WhatsApp. data-wa-base = "https://wa.me/<fono>?text=".
+    */}
+    <aside class="pagar-online" id="pagar-online" data-wa-base={waLink('')}>
       <h2>¿Quieres dejar tu hora pagada? <span class="opcional">(opcional)</span></h2>
-      <p>
+      <p id="explicacion-pago-reserva">
         Paga ahora online y agenda después: al aprobarse el pago recibirás
         una <strong>referencia</strong> para escribir en las notas de tu
         reserva. Se paga el <strong>precio base ("desde")</strong>; si tu
         perrito requiere trabajo extra por su raza, la diferencia se paga en
         el local. También puedes pagar todo en el local, como siempre.
       </p>
-      <button class="boton boton--secundario" type="button" id="boton-pagar-reserva">
+      <p class="estado-pago" id="estado-pago-reserva" aria-live="polite">Cargando medios de pago…</p>
+      <button class="boton boton--secundario" type="button" id="boton-pagar-reserva" hidden>
         Pagar esta reserva ahora
       </button>
+      <a class="boton boton--whatsapp" id="whatsapp-pagar-reserva" href={waLinkReserva()} rel="noopener" hidden>
+        Coordinar el pago por WhatsApp
+      </a>
       <p class="error-pago" id="error-pago-reserva" role="alert" hidden></p>
     </aside>
 
@@ -195,6 +205,39 @@ const datosCliente = {
   // — Pago online de la reserva (pasarela activa según PASARELA_PAGO) —
   const botonPagar = document.getElementById('boton-pagar-reserva');
   const errorPago = document.getElementById('error-pago-reserva');
+  const enlaceWaPago = document.getElementById('whatsapp-pagar-reserva');
+  const estadoPago = document.getElementById('estado-pago-reserva');
+  const waBase = document.getElementById('pagar-online').dataset.waBase;
+
+  // Mensaje de WhatsApp con la selección actual (servicio, tamaño y precio).
+  function actualizarEnlaceWa() {
+    const { servicio, servicioId, tamanoId } = seleccionActual();
+    const precios = servicio.precioDesdePorTamano;
+    const texto =
+      `¡Hola! Quiero dejar pagada una reserva de ${nombreServicio[servicioId]} ` +
+      `para perro ${nombreTamano[tamanoId].toLowerCase()}` +
+      (precios ? ` (desde ${formatCLP(precios[tamanoId])})` : '') +
+      '. ¿Cómo coordinamos el pago?';
+    enlaceWaPago.href = waBase + encodeURIComponent(texto);
+  }
+
+  // Pregunta al servidor si el pago con tarjeta está disponible (interruptor
+  // PAGOS_ONLINE y credenciales). Si falla la consulta, se ofrece WhatsApp:
+  // /api/pago/crear también fallaría.
+  fetch('/api/pago/estado', { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : { tarjeta: false }))
+    .catch(() => ({ tarjeta: false }))
+    .then((medios) => {
+      const tarjeta = medios.tarjeta === true;
+      botonPagar.hidden = !tarjeta;
+      // "Paga ahora online…" contradice el aviso de no disponible: se oculta.
+      document.getElementById('explicacion-pago-reserva').hidden = !tarjeta;
+      enlaceWaPago.hidden = tarjeta;
+      estadoPago.hidden = tarjeta;
+      estadoPago.textContent = tarjeta
+        ? ''
+        : 'El pago online no está disponible en este momento. Puedes pagar en el local o coordinarlo por WhatsApp.';
+    });
 
   // Stripping/deslanado no tienen precio base: se cotizan por WhatsApp,
   // así que no se pueden dejar pagados online.
@@ -299,11 +342,13 @@ const datosCliente = {
   form.addEventListener('change', (e) => {
     actualizarReferencia();
     actualizarBotonPagar();
+    actualizarEnlaceWa();
     if (e.target.name === 'servicio') montarCalendario();
   });
 
   actualizarReferencia();
   actualizarBotonPagar();
+  actualizarEnlaceWa();
   montarCalendario();
 </script>
 
@@ -411,6 +456,15 @@ const datosCliente = {
       margin-block-end: var(--espacio-m);
       color: var(--color-texto-suave);
     }
+  }
+
+  /* `.boton` es inline-flex y le ganaría al atributo hidden. */
+  .pagar-online [hidden] {
+    display: none;
+  }
+
+  .estado-pago {
+    font-size: var(--texto-s);
   }
 
   .error-pago {
