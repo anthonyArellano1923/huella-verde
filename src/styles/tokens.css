@@ -57,6 +57,40 @@
   --radio-pill: 999px;
   --sombra-tarjeta: 0 1px 3px oklch(0.35 0.05 165 / 0.08), 0 4px 14px oklch(0.35 0.05 165 / 0.06);
   --ancho-contenido: 68rem;
+
+  /* — Verticales — (mismo verde de marca, dos voces)
+     Peluquería: el verde hoja de siempre, cálido y cercano.
+     Tienda de plantas: verde eucalipto profundo, más sobrio y editorial. */
+  --color-peluqueria: var(--color-primario);
+  --color-peluqueria-fuerte: var(--color-primario-fuerte);
+  --color-peluqueria-suave: var(--color-primario-suave);
+  --color-tienda: oklch(0.42 0.08 175);            /* eucalipto: 7.9:1 con texto invertido */
+  --color-tienda-fuerte: oklch(0.34 0.07 175);     /* hover / texto sobre tienda-suave */
+  --color-tienda-suave: oklch(0.955 0.02 175);     /* fondos de bloques de tienda */
+
+  /* — Tipografía editorial (tienda) — serif del sistema, sin webfonts */
+  --fuente-editorial: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+
+  /* — Ilustraciones en código (src/components/ilustraciones) —
+     Una sola paleta para todas: así se ven como una colección coherente.
+     Nada de kraft/arena: los envases son verde profundo o carbón, la
+     terracota es un acento saturado y la cerámica es blanco con tinte menta. */
+  --ilus-trazo: oklch(0.3 0.04 170);
+  --ilus-fondo: oklch(0.95 0.025 160);
+  --ilus-hoja: oklch(0.62 0.12 150);
+  --ilus-hoja-2: oklch(0.48 0.09 165);
+  --ilus-hoja-clara: oklch(0.82 0.1 140);
+  --ilus-flor: oklch(0.72 0.12 15);
+  --ilus-lavanda: oklch(0.62 0.12 300);
+  --ilus-terracota: oklch(0.6 0.13 40);
+  --ilus-ceramica: oklch(0.97 0.012 170);
+  --ilus-esmalte: oklch(0.7 0.07 200);
+  --ilus-tierra: oklch(0.38 0.05 50);
+  --ilus-envase: oklch(0.42 0.08 175);
+  --ilus-envase-2: oklch(0.32 0.015 200);
+  --ilus-etiqueta: oklch(0.97 0.012 170);
+  --ilus-metal: oklch(0.76 0.012 220);
+  --ilus-agua: oklch(0.76 0.08 220);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -76,5 +110,42 @@
     --color-texto-invertido: oklch(0.19 0.025 165);
 
     --sombra-tarjeta: 0 1px 3px oklch(0 0 0 / 0.3), 0 4px 14px oklch(0 0 0 / 0.25);
+
+    --color-tienda: oklch(0.78 0.08 175);
+    --color-tienda-fuerte: oklch(0.86 0.06 175);
+    --color-tienda-suave: oklch(0.3 0.04 175);
+
+    /* Ilustraciones en oscuro: trazo claro, rellenos algo más apagados
+       para que no "brillen" sobre fondos oscuros. */
+    --ilus-trazo: oklch(0.9 0.02 165);
+    --ilus-fondo: oklch(0.3 0.03 165);
+    --ilus-hoja: oklch(0.6 0.11 150);
+    --ilus-hoja-2: oklch(0.47 0.08 165);
+    --ilus-hoja-clara: oklch(0.72 0.09 140);
+    --ilus-flor: oklch(0.68 0.11 15);
+    --ilus-lavanda: oklch(0.6 0.11 300);
+    --ilus-terracota: oklch(0.56 0.12 40);
+    --ilus-ceramica: oklch(0.86 0.015 170);
+    --ilus-esmalte: oklch(0.6 0.07 200);
+    --ilus-tierra: oklch(0.36 0.04 50);
+    --ilus-envase: oklch(0.45 0.08 175);
+    --ilus-envase-2: oklch(0.38 0.015 200);
+    --ilus-etiqueta: oklch(0.9 0.012 170);
+    --ilus-metal: oklch(0.68 0.012 220);
+    --ilus-agua: oklch(0.66 0.08 220);
   }
+}
+
+/*
+ * Voz de cada vertical. Base.astro pone `data-vertical` en <body> según la
+ * ruta (/plantas, /accesorios → tienda; /servicios, /reservar → peluqueria).
+ * Re-mapear los tokens base dentro del ámbito hace que TODO lo existente
+ * (botones, enlaces, foco, nav activa) adopte la voz de la tienda sin que
+ * las páginas del catálogo tengan que hacer nada.
+ */
+[data-vertical='tienda'] {
+  --color-primario: var(--color-tienda);
+  --color-primario-fuerte: var(--color-tienda-fuerte);
+  --color-primario-suave: var(--color-tienda-suave);
+  --fuente-titulos: var(--fuente-editorial);
 }

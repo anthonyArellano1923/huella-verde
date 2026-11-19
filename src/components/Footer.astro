@@ -16,18 +16,21 @@ const anio = new Date().getFullYear();
     }
   </div>
 
-  <div class="contenedor columnas">
-    <section>
-      <h2>{NEGOCIO.nombre}</h2>
-      <p>{NEGOCIO.slogan}</p>
-      <p>
-        {NEGOCIO.direccion.calle}, {NEGOCIO.direccion.comuna}<br />
-        {NEGOCIO.direccion.ciudad}
-      </p>
-    </section>
+  <div class="contenedor marca-footer">
+    <p class="marca-footer__nombre">{NEGOCIO.nombre}</p>
+    <p>
+      Peluquería canina y tienda de plantas · {NEGOCIO.direccion.calle}, {NEGOCIO.direccion.comuna}
+    </p>
+  </div>
 
-    <section>
-      <h2>Horarios</h2>
+  <div class="contenedor columnas">
+    <section aria-labelledby="pie-peluqueria" class="col col--peluqueria">
+      <h2 id="pie-peluqueria">Peluquería</h2>
+      <ul>
+        <li><a href="/servicios/">Servicios y precios</a></li>
+        <li><a href="/reservar/">Reservar hora</a></li>
+      </ul>
+      <h3>Horarios</h3>
       <ul>
         {
           NEGOCIO.horarios.map((h) => (
@@ -39,8 +42,16 @@ const anio = new Date().getFullYear();
       </ul>
     </section>
 
-    <section>
-      <h2>Contacto</h2>
+    <section aria-labelledby="pie-tienda" class="col col--tienda">
+      <h2 id="pie-tienda">Tienda</h2>
+      <ul>
+        <li><a href="/plantas/">Plantas</a></li>
+        <li><a href="/accesorios/">Accesorios y cuidado</a></li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="pie-contacto" class="col">
+      <h2 id="pie-contacto">Contacto</h2>
       <ul>
         <li>
           <a href={waLinkConsulta()} rel="noopener">WhatsApp</a>
@@ -52,6 +63,10 @@ const anio = new Date().getFullYear();
           <a href="/terminos/">Términos y privacidad</a>
         </li>
       </ul>
+      <address>
+        {NEGOCIO.direccion.calle}, {NEGOCIO.direccion.comuna}<br />
+        {NEGOCIO.direccion.region}
+      </address>
     </section>
   </div>
 
@@ -83,7 +98,7 @@ const anio = new Date().getFullYear();
 
   .rastro :global(.huellita) {
     color: var(--color-primario);
-    opacity: 0.5;
+    opacity: 0.3;
     transform: rotate(-24deg);
   }
 
@@ -101,13 +116,58 @@ const anio = new Date().getFullYear();
   .columnas {
     display: grid;
     gap: var(--espacio-l);
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
   }
 
+  .marca-footer {
+    margin-block-end: var(--espacio-l);
+
+    & p {
+      max-inline-size: 48ch;
+    }
+  }
+
+  .marca-footer__nombre {
+    font-family: var(--fuente-titulos);
+    font-size: var(--texto-l);
+    font-weight: 700;
+    color: var(--color-texto);
+  }
+
+  /* Cada columna de negocio lleva el color de su vertical en el título */
   h2 {
     font-size: var(--texto-base);
     color: var(--color-texto);
     margin-block-end: var(--espacio-s);
+    padding-block-start: var(--espacio-s);
+    border-block-start: 3px solid var(--color-borde);
+  }
+
+  .col--peluqueria h2 {
+    border-color: var(--color-peluqueria);
+  }
+
+  .col--tienda h2 {
+    border-color: var(--color-tienda);
+  }
+
+  h3 {
+    margin-block: var(--espacio-m) var(--espacio-xs);
+    font-family: var(--fuente-texto);
+    font-size: var(--texto-s);
+    color: var(--color-texto);
+  }
+
+  /* Targets táctiles ≥ 44px en los enlaces del pie */
+  li a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+  }
+
+  address {
+    margin-block-start: var(--espacio-s);
+    font-style: normal;
   }
 
   ul {

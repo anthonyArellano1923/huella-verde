@@ -1,23 +1,41 @@
 ---
 /**
- * Header con navegación principal. En móvil las secciones caben en una fila
- * scrolleable (sin menú hamburguesa: menos JS, más directo).
+ * Header con navegación principal en dos grupos rotulados (Peluquería / Tienda).
+ * Contacto y carrito son "utilidades" compartidas por ambos negocios: van
+ * arriba a la derecha, junto a la marca. Sin JS ni hamburguesa: en 375 px la
+ * fila 1 es marca + utilidades y la fila 2 son los dos grupos, sin scroll.
  */
 import { NEGOCIO } from '../data/negocio';
 import CarritoBadge from './react/CarritoBadge';
 import LogoHuellaVerde from './LogoHuellaVerde.astro';
 
-const enlaces = [
-  { href: '/', texto: 'Inicio' },
-  { href: '/servicios/', texto: 'Servicios' },
-  { href: '/reservar/', texto: 'Reservar' },
-  { href: '/ropita/', texto: 'Ropita' },
-  { href: '/contacto/', texto: 'Contacto' },
+const grupos = [
+  {
+    id: 'nav-peluqueria',
+    rotulo: 'Peluquería',
+    vertical: 'peluqueria',
+    enlaces: [
+      { href: '/servicios/', texto: 'Servicios' },
+      { href: '/reservar/', texto: 'Reservar' },
+    ],
+  },
+  {
+    id: 'nav-tienda',
+    rotulo: 'Tienda',
+    vertical: 'tienda',
+    enlaces: [
+      { href: '/plantas/', texto: 'Plantas' },
+      { href: '/accesorios/', texto: 'Accesorios' },
+    ],
+  },
 ];
 
 const rutaActual = Astro.url.pathname;
-const esActual = (href: string) =>
-  href === '/' ? rutaActual === '/' : rutaActual.startsWith(href);
+/** Activo también en subrutas: `/plantas/monstera` marca Plantas. */
+const esActual = (href: string) => {
+  const base = href.replace(/\/$/, '');
+  return rutaActual === base || rutaActual.startsWith(`${base}/`);
+};
 ---
 
 <header>
@@ -27,29 +45,50 @@ const esActual = (href: string) =>
       <span class="marca__nombre">{NEGOCIO.nombre}</span>
     </a>
     <nav aria-label="Navegación principal">
-      <ul>
-        {
-          enlaces.map(({ href, texto }) => (
-            <li>
-              <a href={href} aria-current={esActual(href) ? 'page' : undefined}>
-                {texto}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+      {
+        grupos.map((g) => (
+          <div class="grupo" data-grupo={g.vertical}>
+            <p class="grupo__rotulo" id={g.id}>{g.rotulo}</p>
+            <ul aria-labelledby={g.id}>
+              {g.enlaces.map(({ href, texto }) => (
+                <li>
+                  <a href={href} aria-current={esActual(href) ? 'page' : undefined}>
+                    {texto}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
     </nav>
-    <CarritoBadge client:load />
+    <div class="utilidades">
+      <a
+        class="utilidades__contacto"
+        href="/contacto/"
+        aria-current={esActual('/contacto/') ? 'page' : undefined}
+      >
+        Contacto
+      </a>
+      <CarritoBadge client:load />
+    </div>
   </div>
 </header>
 
 <style>
+  /* Sticky solo en pantallas anchas: en móvil el header ocupa 2-3 filas y
+     fijarlo se comería la pantalla. */
   header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
     background: var(--color-superficie);
     border-block-end: 1px solid var(--color-borde);
+  }
+
+  @media (width >= 48rem) {
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
   }
 
   .barra {
@@ -65,6 +104,7 @@ const esActual = (href: string) =>
     display: inline-flex;
     align-items: center;
     gap: var(--espacio-s);
+    min-block-size: 44px;
     font-family: var(--fuente-titulos);
     font-size: var(--texto-l);
     font-weight: 700;
@@ -81,41 +121,121 @@ const esActual = (href: string) =>
     transform: rotate(-8deg);
   }
 
-  /* Como ítem flex, nav no puede encogerse bajo su contenido por defecto
-     (min-width:auto) y desborda la página en móvil; con esto el scroll
-     horizontal queda DENTRO de la lista, no en el body. */
+  /* En móvil la nav ocupa su propia fila (order + flex-basis 100%) y el
+     carrito sube junto a la marca. En escritorio todo cabe en una fila. */
   nav {
+    order: 3;
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--espacio-xs) var(--espacio-m);
     min-inline-size: 0;
+  }
+
+  @media (width >= 48rem) {
+    nav {
+      order: 0;
+      flex-basis: auto;
+    }
+  }
+
+  /* Contacto + carrito: compartidos por ambas verticales, fila 1 en móvil */
+  .utilidades {
+    order: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-s);
+  }
+
+  .utilidades__contacto {
+    display: flex;
+    align-items: center;
+    min-block-size: 44px;
+    padding-inline: 0.65em;
+    border-radius: var(--radio-pill);
+    color: var(--color-texto-suave);
+    font-size: var(--texto-s);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-texto);
+      background: var(--color-borde);
+    }
+
+    &[aria-current='page'] {
+      color: var(--color-texto-invertido);
+      background: var(--color-texto);
+    }
+  }
+
+  /* Cada grupo lleva su color en --g, fijo por vertical (no depende de la
+     página actual): así Peluquería y Tienda se distinguen en cualquier ruta. */
+  .grupo {
+    --g: var(--color-peluqueria);
+    --g-fuerte: var(--color-peluqueria-fuerte);
+    --g-suave: var(--color-peluqueria-suave);
+    padding-block-start: var(--espacio-xs);
+    border-block-start: 3px solid var(--g);
+    border-radius: 2px;
+
+    &[data-grupo='tienda'] {
+      --g: var(--color-tienda);
+      --g-fuerte: var(--color-tienda-fuerte);
+      --g-suave: var(--color-tienda-suave);
+      /* La tienda suma el acento floral a su filete: distingue los dos
+         verdes de un vistazo, también para quien percibe poco el matiz. */
+      border-image: linear-gradient(90deg, var(--color-tienda) 55%, var(--color-acento)) 1;
+    }
+  }
+
+  .grupo__rotulo {
+    padding-inline: 0.4em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    color: var(--g-fuerte);
+  }
+
+  /* Rótulo de la tienda en serif editorial: la voz de cada negocio se nota
+     ya en la navegación. */
+  [data-grupo='tienda'] .grupo__rotulo {
+    font-family: var(--fuente-editorial);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
   }
 
   nav ul {
     display: flex;
-    gap: var(--espacio-xs);
+    gap: 0;
     margin: 0;
     padding: 0;
     list-style: none;
-    overflow-x: auto;
-    /* En pantallas chicas la fila navega con scroll horizontal */
-    -webkit-overflow-scrolling: touch;
   }
 
   nav a {
-    display: block;
-    padding: 0.4em 0.8em;
+    display: flex;
+    align-items: center;
+    min-block-size: 44px;
+    padding-inline: 0.65em;
     border-radius: var(--radio-pill);
     color: var(--color-texto-suave);
+    font-size: var(--texto-s);
     font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
 
     &:hover {
-      color: var(--color-primario-fuerte);
-      background: var(--color-primario-suave);
+      color: var(--g-fuerte, var(--color-primario-fuerte));
+      background: var(--g-suave, var(--color-primario-suave));
     }
 
     &[aria-current='page'] {
       color: var(--color-texto-invertido);
-      background: var(--color-primario);
+      background: var(--g, var(--color-primario));
     }
   }
 </style>
@@ -124,6 +244,12 @@ const esActual = (href: string) =>
   /* Estilos de la isla CarritoBadge */
   .carrito-badge {
     position: relative;
+    /* Target táctil mínimo de 44 px (WCAG 2.5.5) aunque el ícono sea chico */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 44px;
+    min-block-size: 44px;
     font-size: 1.3rem;
     text-decoration: none;
     padding: 0.2em;

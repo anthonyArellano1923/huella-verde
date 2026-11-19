@@ -1,37 +1,71 @@
 ---
-/** Portada: hero con llamado a reservar + servicios resumidos + ropita destacada. */
-import { getCollection } from 'astro:content';
+/**
+ * Portada de marca compartida: hero breve, dos "puertas" (Peluquería y Tienda
+ * de plantas), resumen de servicios y franja editorial de la tienda.
+ */
 import Base from '../layouts/Base.astro';
-import PrendaCard from '../components/PrendaCard.astro';
 import LogoHuellaVerde from '../components/LogoHuellaVerde.astro';
 import IconoGrooming from '../components/IconoGrooming.astro';
-import { NEGOCIO } from '../data/negocio';
+import Ilustracion from '../components/ilustraciones/Ilustracion.astro';
 import { SERVICIOS } from '../data/servicios';
 import { formatCLP } from '../utils/money';
 
-const destacadas = (await getCollection('prendas', ({ data }) => data.destacada && data.stock > 0)).slice(0, 3);
+const categorias = [
+  { id: 'nativa-arbusto', nombre: 'Nativas', href: '/plantas/' },
+  { id: 'monstera', nombre: 'De interior', href: '/plantas/' },
+  { id: 'macetero-terracota', nombre: 'Maceteros', href: '/accesorios/' },
+  { id: 'regadera', nombre: 'Cuidado', href: '/accesorios/' },
+];
 ---
 
-<Base titulo="Peluquería canina y ropita de perro" descripcion={NEGOCIO.descripcion}>
+<Base
+  titulo="Peluquería canina y tienda de plantas"
+  descripcion="Huella Verde: peluquería canina con reserva de hora online y tienda de plantas nativas, maceteros y accesorios de cuidado en Santiago."
+>
   <section class="hero">
-    <IconoGrooming tipo="tijeras" size={116} class="deco-hero deco-hero--izq" />
-    <IconoGrooming tipo="peine" size={116} class="deco-hero deco-hero--der" />
     <div class="contenedor hero__contenido">
-      <LogoHuellaVerde size={92} class="hero__emblema" title="Emblema de Huella Verde" />
-      <p class="saludo">Peluquería canina · {NEGOCIO.direccion.comuna}</p>
-      <h1>Tu perrito, limpio, peinado y <em>abrigado</em></h1>
+      <LogoHuellaVerde size={80} class="hero__emblema" title="Emblema de Huella Verde" />
+      <h1>Cuidamos a tu perro y a tus plantas</h1>
       <p class="bajada">
-        Baño, corte y stripping con hora reservada online — sin llamadas ni esperas.
-        Y para el invierno, ropita tejida a mano por {NEGOCIO.duena}.
+        Dos mundos bajo un mismo techo en Santiago: una peluquería canina con hora reservada online
+        y una tienda de plantas nativas y accesorios para el hogar.
       </p>
-      <div class="acciones">
-        <a class="boton" href="/reservar/">Reservar hora</a>
-        <a class="boton boton--secundario" href="/ropita/">Ver la ropita</a>
-      </div>
     </div>
   </section>
 
+  <section class="contenedor puertas" aria-label="Elige por dónde empezar">
+    <article class="puerta puerta--peluqueria" data-vertical="peluqueria" aria-labelledby="puerta-peluqueria">
+      <IconoGrooming tipo="perro" size={56} class="puerta__icono" />
+      <p class="sobretitulo">Peluquería canina</p>
+      <h2 id="puerta-peluqueria">Baño, corte y mucho cariño</h2>
+      <p>
+        Tu perro sale limpio, peinado y feliz. Reserva online en un minuto, sin llamadas ni esperas.
+      </p>
+      <div class="acciones">
+        <a class="boton" href="/reservar/">Reservar hora</a>
+        <a class="boton boton--secundario" href="/servicios/">Ver servicios y precios</a>
+      </div>
+    </article>
+
+    <article class="puerta puerta--tienda" data-vertical="tienda" aria-labelledby="puerta-tienda">
+      <div class="marco-ilus puerta__ilus">
+        <Ilustracion id="monstera" />
+      </div>
+      <p class="sobretitulo">Tienda de plantas</p>
+      <h2 id="puerta-tienda">Flora nativa y objetos para cuidarla</h2>
+      <p>
+        Plantas de la zona central de Chile, maceteros, sustratos y herramientas elegidas con ojo
+        editorial para que tu casa respire verde.
+      </p>
+      <div class="acciones">
+        <a class="boton" href="/plantas/">Ver plantas</a>
+        <a class="boton boton--secundario" href="/accesorios/">Accesorios y cuidado</a>
+      </div>
+    </article>
+  </section>
+
   <section class="contenedor seccion" aria-labelledby="titulo-servicios">
+    <p class="sobretitulo">Peluquería</p>
     <h2 id="titulo-servicios">Servicios</h2>
     <ul class="servicios">
       {
@@ -42,7 +76,7 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
             <p>{s.descripcion}</p>
             <p class="desde">
               {s.precioDesdePorTamano ? (
-                <>Desde <strong>{formatCLP(s.precioDesdePorTamano.pequeno)}</strong></>
+                <>Desde <strong class="precio">{formatCLP(s.precioDesdePorTamano.pequeno)}</strong></>
               ) : (
                 <>Precio a consultar</>
               )}
@@ -63,57 +97,37 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     </p>
   </section>
 
-  {
-    destacadas.length > 0 && (
-      <section class="contenedor seccion" aria-labelledby="titulo-ropita">
-        <h2 id="titulo-ropita">Ropita destacada</h2>
-        <p>Prendas únicas, tejidas a mano. Cuando se venden, se acabaron.</p>
-        <div class="grilla-prendas">
-          {destacadas.map((prenda) => (
-            <PrendaCard prenda={prenda} />
-          ))}
-        </div>
-        <p>
-          <a href="/ropita/">Ver todo el catálogo →</a>
-        </p>
-      </section>
-    )
-  }
+  <section class="franja" data-vertical="tienda" aria-labelledby="titulo-tienda">
+    <div class="contenedor">
+      <p class="sobretitulo">Tienda</p>
+      <h2 id="titulo-tienda">Para vivir entre plantas</h2>
+      <ul class="categorias">
+        {
+          categorias.map((c) => (
+            <li>
+              <a href={c.href} class="categoria">
+                <span class="marco-ilus">
+                  <Ilustracion id={c.id} />
+                </span>
+                <span class="categoria__nombre">{c.nombre}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
 </Base>
 
 <style>
   .hero {
-    position: relative;
-    overflow: hidden;
-    padding-block: var(--espacio-2xl);
-    background:
-      radial-gradient(120% 80% at 50% -10%, var(--color-primario-suave), transparent 60%),
-      linear-gradient(180deg, var(--color-primario-suave), var(--color-fondo));
+    padding-block: var(--espacio-xl) var(--espacio-l);
+    background: linear-gradient(180deg, var(--color-primario-suave), var(--color-fondo));
     text-align: center;
-  }
-
-  /* Herramientas de grooming decorando el hero: tijeras y peine, sutiles. */
-  .hero :global(.deco-hero) {
-    position: absolute;
-    inset-block-start: 12%;
-    color: var(--color-primario);
-    opacity: 0.16;
-    pointer-events: none;
-  }
-
-  .hero :global(.deco-hero--izq) {
-    inset-inline-start: 4%;
-    transform: rotate(-16deg);
-  }
-
-  .hero :global(.deco-hero--der) {
-    inset-inline-end: 4%;
-    transform: rotate(12deg);
   }
 
   .hero__contenido {
     position: relative;
-    z-index: 1;
   }
 
   .hero :global(.hero__emblema) {
@@ -121,44 +135,76 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     margin-block-end: var(--espacio-m);
   }
 
-  .saludo {
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    font-size: var(--texto-s);
-    color: var(--color-primario-fuerte);
-  }
-
   .hero h1 {
-    max-width: 22ch;
+    max-inline-size: 20ch;
     margin-inline: auto;
-    margin-block: var(--espacio-s) var(--espacio-m);
-
-    & em {
-      font-style: normal;
-      color: var(--color-primario-fuerte);
-    }
-  }
-
-  /* En pantallas chicas las herramientas estorban el texto: se ocultan */
-  @media (width < 46rem) {
-    .hero :global(.deco-hero) {
-      display: none;
-    }
+    margin-block-end: var(--espacio-m);
   }
 
   .bajada {
-    max-width: 55ch;
+    max-inline-size: 55ch;
     margin-inline: auto;
     color: var(--color-texto-suave);
+  }
+
+  /* Dos puertas: apiladas en móvil, lado a lado desde 48rem. Un container
+     query sería excesivo aquí; media query simple y legible. */
+  .puertas {
+    display: grid;
+    gap: var(--espacio-m);
+    padding-block-start: var(--espacio-l);
+  }
+
+  @media (width >= 48rem) {
+    .puertas {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Cada puerta fija su vertical con data-vertical; en la tienda el
+     re-mapeo de tokens cambia color primario y tipografía de títulos. */
+  .puerta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-s);
+    padding: var(--espacio-l);
+    background: var(--color-primario-suave);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m) var(--radio-m) var(--radio-m) calc(var(--radio-m) * 2.4);
+    border-block-start: 5px solid var(--color-primario);
+
+    & h2 {
+      font-size: var(--texto-xl);
+    }
+
+    & p:not(.sobretitulo) {
+      color: var(--color-texto-suave);
+    }
+  }
+
+  .puerta--tienda h2 {
+    font-family: var(--fuente-editorial);
+  }
+
+  .puerta :global(.puerta__icono) {
+    color: var(--color-primario);
+  }
+
+  .puerta__ilus {
+    inline-size: min(100%, 9rem);
+    padding: var(--espacio-s);
   }
 
   .acciones {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--espacio-m);
-    margin-block-start: var(--espacio-l);
+    gap: var(--espacio-s) var(--espacio-m);
+    margin-block-start: auto;
+    padding-block-start: var(--espacio-s);
+  }
+
+  .acciones .boton {
+    min-block-size: 44px;
   }
 
   .seccion {
@@ -238,10 +284,48 @@ const destacadas = (await getCollection('prendas', ({ data }) => data.destacada 
     pointer-events: none;
   }
 
-  .grilla-prendas {
+  /* Franja de la tienda: fondo propio para separarla del lado peluquería */
+  .franja {
+    margin-block-start: var(--espacio-2xl);
+    padding-block: var(--espacio-xl);
+    background: var(--color-primario-suave);
+
+    & h2 {
+      margin-block-end: var(--espacio-m);
+    }
+  }
+
+  .categorias {
     display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--espacio-m);
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-    margin-block: var(--espacio-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (width >= 48rem) {
+    .categorias {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .categoria {
+    display: grid;
+    gap: var(--espacio-s);
+    color: var(--color-texto);
+    text-decoration: none;
+
+    &:hover .categoria__nombre {
+      color: var(--color-primario-fuerte);
+      text-decoration: underline;
+    }
+  }
+
+  .categoria__nombre {
+    min-block-size: 44px;
+    font-family: var(--fuente-editorial);
+    font-size: var(--texto-l);
+    font-weight: 700;
   }
 </style>
