@@ -310,11 +310,26 @@ const categorias = [
     }
   }
 
+  /* Each category is a white card on the mint band: the illustration frame
+     and the band share almost the same tint, so the card's own surface,
+     border and shadow are what separate one category from the next. */
   .categoria {
     display: grid;
     gap: var(--espacio-s);
+    block-size: 100%;
+    padding: var(--espacio-s) var(--espacio-s) var(--espacio-xs);
     color: var(--color-texto);
     text-decoration: none;
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-m) var(--radio-m) var(--radio-m) calc(var(--radio-m) * 2.4);
+    box-shadow: var(--sombra-tarjeta);
+    transition: border-color 0.15s, transform 0.15s;
+
+    &:hover {
+      border-color: var(--color-primario);
+      transform: translateY(-2px);
+    }
 
     &:hover .categoria__nombre {
       color: var(--color-primario-fuerte);
@@ -322,8 +337,15 @@ const categorias = [
     }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .categoria:hover {
+      transform: none;
+    }
+  }
+
   .categoria__nombre {
     min-block-size: 44px;
+    padding-inline: var(--espacio-xs);
     font-family: var(--fuente-editorial);
     font-size: var(--texto-l);
     font-weight: 700;
