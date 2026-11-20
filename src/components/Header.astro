@@ -7,6 +7,7 @@
  */
 import { NEGOCIO } from '../data/negocio';
 import CarritoBadge from './CarritoBadge.astro';
+import { rutaSinBase } from '../utils/ruta';
 import LogoHuellaVerde from './LogoHuellaVerde.astro';
 
 const grupos = [
@@ -30,7 +31,7 @@ const grupos = [
   },
 ];
 
-const rutaActual = Astro.url.pathname;
+const rutaActual = rutaSinBase(Astro.url.pathname);
 /** Activo también en subrutas: `/plantas/monstera` marca Plantas. */
 const esActual = (href: string) => {
   const base = href.replace(/\/$/, '');

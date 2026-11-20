@@ -8,6 +8,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SchemaLocalBusiness from '../components/SchemaLocalBusiness.astro';
 import { NEGOCIO } from '../data/negocio';
+import { rutaSinBase } from '../utils/ruta';
 
 interface Props {
   titulo: string;
@@ -31,11 +32,11 @@ const enRuta = (ruta: string, bases: string[]) =>
   bases.some((b) => ruta === b || ruta.startsWith(`${b}/`));
 
 const { titulo, descripcion = NEGOCIO.descripcion, noindex = false, vertical: verticalProp } = Astro.props;
-const ruta = Astro.url.pathname;
+const ruta = rutaSinBase(Astro.url.pathname);
 const vertical =
   verticalProp ?? (enRuta(ruta, RUTAS_TIENDA) ? 'tienda' : enRuta(ruta, RUTAS_PELUQUERIA) ? 'peluqueria' : 'general');
 const tituloCompleto = `${titulo} · ${NEGOCIO.nombre}`;
-const canonical = new URL(Astro.url.pathname, NEGOCIO.url);
+const canonical = new URL(ruta, NEGOCIO.url);
 ---
 
 <!doctype html>

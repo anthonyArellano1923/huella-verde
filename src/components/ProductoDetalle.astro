@@ -14,6 +14,7 @@ import Ilustracion from './ilustraciones/Ilustracion.astro';
 import { formatCLP } from '../utils/money';
 import { waLink } from '../utils/whatsapp';
 import { NEGOCIO } from '../data/negocio';
+import { rutaSinBase } from '../utils/ruta';
 import { TERMINOS, resumenEntrega } from '../data/terminos';
 import {
   ETIQUETA_CATEGORIA,
@@ -59,7 +60,7 @@ datos.push(['Disponibles', agotado ? 'Agotado' : String(stock)]);
  * (same `@id`). Image only when there is a real photo: illustrations are
  * inline SVG and the generic og-image is not a product picture.
  */
-const urlProducto = new URL(Astro.url.pathname, NEGOCIO.url).href;
+const urlProducto = new URL(rutaSinBase(Astro.url.pathname), NEGOCIO.url).href;
 const imagenSchema = foto
   ? new URL((await getImage({ src: foto, width: 1200, format: 'jpg' })).src, NEGOCIO.url).href
   : undefined;

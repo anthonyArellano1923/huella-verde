@@ -1,0 +1,62 @@
+# Static preview of the site on GitHub Pages
+# (https://anthonyarellano1923.github.io/huella-verde/).
+#
+# GitHub Pages only serves files, so this build drops the serverless payment
+# routes and the Vercel adapter (see `esGitHubPages` in astro.config.mjs).
+# Online payments are unavailable in the preview; the UI offers WhatsApp.
+name: Vista previa en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Server-only routes (prerender = false) cannot exist in a static build.
+      # This only affects the throwaway CI checkout, never the repository.
+      - name: Quitar rutas de servidor
+        run: |
+          rm -rf src/pages/api src/pages/pago
+
+      - name: Build estático
+        run: npm run build
+        env:
+          GITHUB_PAGES: 'true'
+
+      - name: Ajustar rutas a /huella-verde
+        run: node scripts/pages-base.mjs dist /huella-verde
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
