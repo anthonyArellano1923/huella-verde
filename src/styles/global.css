@@ -221,6 +221,13 @@ button {
   }
 }
 
+/* Slightly smaller stepper for dense lists (cart drawer). 40 px targets
+   still clear WCAG 2.5.8 (24 px minimum). */
+.stepper--compacto button {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+}
+
 /* — Tarjeta orgánica: la "caja con carácter" de Huella Verde —
    Esquina inferior-izquierda más redonda (rompe el rectángulo perfecto),
    opcional cinta de acento arriba y elevación al pasar el mouse. */
@@ -320,4 +327,42 @@ button {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* — Code-drawn illustrations (Ilustracion.astro) —
+   Global so they also style SVGs inlined at runtime, e.g. cart thumbnails. */
+/* Stroke and fill live on CSS classes, not presentation attributes, so the
+   palette variables (and their dark-mode values) resolve. Global + .ilus
+   prefix because Astro's scoped styles don't reach child components. */
+.ilus {
+  display: block;
+  /* Without an explicit size, fill the container and stay square */
+  &:not([width]) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+  /* Inherited by every shape: one stroke for the whole set */
+  fill: none;
+  stroke: var(--ilus-trazo);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  .ilus-fino { stroke-width: 1.8; }
+  .ilus-bg { fill: var(--ilus-fondo); stroke: none; }
+  .ilus-hoja { fill: var(--ilus-hoja); }
+  .ilus-hoja-2 { fill: var(--ilus-hoja-2); }
+  .ilus-hoja-clara { fill: var(--ilus-hoja-clara); }
+  .ilus-flor { fill: var(--ilus-flor); }
+  .ilus-lavanda { fill: var(--ilus-lavanda); }
+  .ilus-terracota { fill: var(--ilus-terracota); }
+  .ilus-ceramica { fill: var(--ilus-ceramica); }
+  .ilus-esmalte { fill: var(--ilus-esmalte); }
+  .ilus-tierra { fill: var(--ilus-tierra); }
+  .ilus-envase { fill: var(--ilus-envase); }
+  .ilus-envase-2 { fill: var(--ilus-envase-2); }
+  .ilus-etiqueta { fill: var(--ilus-etiqueta); }
+  .ilus-metal { fill: var(--ilus-metal); }
+  .ilus-agua { fill: var(--ilus-agua); }
 }

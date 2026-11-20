@@ -100,8 +100,17 @@
   --ilus-agua: oklch(0.76 0.08 220);
 }
 
+/*
+ * Dark palette. Applied in two cases:
+ *  - the system is in dark mode and the visitor did not force light
+ *    (no data-tema="claro" on <html>), and
+ *  - the visitor chose dark in the footer switch (data-tema="oscuro"),
+ *    whatever the system says.
+ * Plain CSS cannot share one block between a media query and a selector, so
+ * the declarations are repeated: keep both copies identical.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema='claro']) {
     --color-primario: oklch(0.72 0.1 155);
     --color-primario-fuerte: oklch(0.8 0.1 155);
     --color-primario-suave: oklch(0.3 0.05 155);
@@ -141,6 +150,56 @@
     --ilus-metal: oklch(0.68 0.012 220);
     --ilus-agua: oklch(0.66 0.08 220);
   }
+}
+
+:root[data-tema='oscuro'] {
+  --color-primario: oklch(0.72 0.1 155);
+  --color-primario-fuerte: oklch(0.8 0.1 155);
+  --color-primario-suave: oklch(0.3 0.05 155);
+  --color-acento: oklch(0.74 0.1 15);
+  --color-acento-fuerte: oklch(0.85 0.07 15);
+  --color-acento-suave: oklch(0.31 0.04 15);
+
+  --color-fondo: oklch(0.21 0.02 165);
+  --color-superficie: oklch(0.26 0.022 165);
+  --color-borde: oklch(0.36 0.025 165);
+  --color-texto: oklch(0.93 0.012 165);
+  --color-texto-suave: oklch(0.72 0.018 165);
+  --color-texto-invertido: oklch(0.19 0.025 165);
+
+  --sombra-tarjeta: 0 1px 3px oklch(0 0 0 / 0.3), 0 4px 14px oklch(0 0 0 / 0.25);
+
+  --color-tienda: oklch(0.78 0.08 175);
+  --color-tienda-fuerte: oklch(0.86 0.06 175);
+  --color-tienda-suave: oklch(0.3 0.04 175);
+
+  /* Ilustraciones en oscuro: trazo claro, rellenos algo más apagados
+     para que no "brillen" sobre fondos oscuros. */
+  --ilus-trazo: oklch(0.9 0.02 165);
+  --ilus-fondo: oklch(0.3 0.03 165);
+  --ilus-hoja: oklch(0.6 0.11 150);
+  --ilus-hoja-2: oklch(0.47 0.08 165);
+  --ilus-hoja-clara: oklch(0.72 0.09 140);
+  --ilus-flor: oklch(0.68 0.11 15);
+  --ilus-lavanda: oklch(0.6 0.11 300);
+  --ilus-terracota: oklch(0.56 0.12 40);
+  --ilus-ceramica: oklch(0.86 0.015 170);
+  --ilus-esmalte: oklch(0.6 0.07 200);
+  --ilus-tierra: oklch(0.36 0.04 50);
+  --ilus-envase: oklch(0.45 0.08 175);
+  --ilus-envase-2: oklch(0.38 0.015 200);
+  --ilus-etiqueta: oklch(0.9 0.012 170);
+  --ilus-metal: oklch(0.68 0.012 220);
+  --ilus-agua: oklch(0.66 0.08 220);
+}
+
+/* Native controls (scrollbars, form fields) follow the chosen theme. */
+:root[data-tema='claro'] {
+  color-scheme: light;
+}
+
+:root[data-tema='oscuro'] {
+  color-scheme: dark;
 }
 
 /*

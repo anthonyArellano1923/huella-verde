@@ -23,6 +23,8 @@ export interface ItemCarrito {
   /** Precio de referencia para MOSTRAR el subtotal; el cobro real se calcula en el servidor. */
   precio: number;
   qty: number;
+  /** Thumbnail URL (photo or /miniaturas/<id>.svg); optional for older carts. */
+  miniatura?: string;
 }
 
 /** Max units of one product per order (same cap as the server). */
@@ -50,6 +52,7 @@ function normalizar(raw: unknown): ItemCarrito | null {
     detalle,
     precio: r.precio,
     qty: Math.min(Math.max(1, Math.floor(r.qty)), MAX_POR_PRODUCTO),
+    miniatura: typeof r.miniatura === 'string' ? r.miniatura : undefined,
   };
 }
 
@@ -88,7 +91,12 @@ export function agregarAlCarrito(item: Omit<ItemCarrito, 'qty'>) {
   const existente = items.find((i) => i.id === item.id);
   if (existente) {
     $carrito.set(
-      items.map((i) => (i.id === item.id ? { ...i, qty: Math.min(i.qty + 1, MAX_POR_PRODUCTO) } : i))
+      items.map((i) =>
+        i.id === item.id
+          ? // Lines saved before thumbnails existed pick one up on the next add.
+            { ...i, miniatura: i.miniatura ?? item.miniatura, qty: Math.min(i.qty + 1, MAX_POR_PRODUCTO) }
+          : i
+      )
     );
   } else {
     $carrito.set([...items, { ...item, qty: 1 }]);

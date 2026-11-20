@@ -44,6 +44,14 @@ const canonical = new URL(ruta, NEGOCIO.url);
 <html lang="es-CL">
   <head>
     <meta charset="UTF-8" />
+    {/* Theme chosen in the footer switch (SelectorTema.astro), applied before
+        the first paint so a forced theme never flashes the other one. */}
+    <script is:inline>
+      try {
+        const tema = localStorage.getItem('hv-tema');
+        if (tema === 'claro' || tema === 'oscuro') document.documentElement.dataset.tema = tema;
+      } catch {}
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{tituloCompleto}</title>
     <meta name="description" content={descripcion} />

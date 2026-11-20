@@ -11,6 +11,7 @@ import { Image, getImage } from 'astro:assets';
 import { render, type CollectionEntry } from 'astro:content';
 import BotonAgregarCarrito from './react/BotonAgregarCarrito';
 import Ilustracion from './ilustraciones/Ilustracion.astro';
+import { miniaturaProducto } from '../utils/miniatura';
 import { formatCLP } from '../utils/money';
 import { waLink } from '../utils/whatsapp';
 import { NEGOCIO } from '../data/negocio';
@@ -29,6 +30,7 @@ interface Props {
 
 const { producto } = Astro.props;
 const { nombre, descripcion, precio, foto, fotoAlt, stock, ilustracion } = producto.data;
+const miniatura = await miniaturaProducto(foto, ilustracion);
 const { Content } = await render(producto);
 const agotado = stock === 0;
 const esPlanta = producto.collection === 'plantas';
@@ -170,6 +172,7 @@ function enlaceWhatsApp(consulta: boolean): string {
               talla="única"
               precio={precio}
               stock={stock}
+              miniatura={miniatura}
             />
             <p class="nota-pago">
               Pago online seguro. {resumenEntrega()} Se coordina después del pago.{' '}

@@ -4,39 +4,45 @@
  * cambiar un precio allá actualiza esta tabla, la página de reservas y el
  * checkout de la rama transbank. La duración no va por celda porque Martha
  * definió un bloque único (1,5–2 h) para todos los servicios.
+ *
+ * En celular la tabla no scrollea: cada servicio se apila como una tarjeta
+ * con los tres tamaños lado a lado (cada celda muestra su tamaño con
+ * data-tamano). Los roles ARIA explícitos conservan la semántica de tabla,
+ * que algunos navegadores pierden al cambiar el `display` de sus elementos.
+ * Un servicio "a consultar" en todos los tamaños ocupa una sola celda.
  */
 import { SERVICIOS, TAMANOS, SERVICIOS_EXPRESS, POLITICAS_RESERVA } from '../data/servicios';
 import { formatCLP } from '../utils/money';
 ---
 
-<div class="envoltorio" tabindex="0" role="region" aria-label="Tabla de precios por servicio y tamaño de perro">
-  <table>
+<div class="envoltorio">
+  <table role="table">
     <caption class="visualmente-oculto">
       Precios de cada servicio según el tamaño del perro
     </caption>
     <thead>
-      <tr>
-        <th scope="col">Servicio</th>
-        {TAMANOS.map((t) => <th scope="col">{t.nombre}</th>)}
+      <tr role="row">
+        <th scope="col" role="columnheader">Servicio</th>
+        {TAMANOS.map((t) => <th scope="col" role="columnheader">{t.nombre}</th>)}
       </tr>
     </thead>
     <tbody>
       {
         SERVICIOS.map((s) => (
-          <tr>
-            <th scope="row">{s.nombre}</th>
-            {TAMANOS.map((t) => (
-              <td>
-                {s.precioDesdePorTamano ? (
-                  <>
-                    <span class="desde">desde </span>
-                    <strong>{formatCLP(s.precioDesdePorTamano[t.id])}</strong>
-                  </>
-                ) : (
-                  <span class="consultar">A consultar</span>
-                )}
+          <tr role="row">
+            <th scope="row" role="rowheader">{s.nombre}</th>
+            {s.precioDesdePorTamano ? (
+              TAMANOS.map((t) => (
+                <td role="cell" data-tamano={t.nombre}>
+                  <span class="desde">desde </span>
+                  <strong>{formatCLP(s.precioDesdePorTamano![t.id])}</strong>
+                </td>
+              ))
+            ) : (
+              <td role="cell" colspan={TAMANOS.length} class="celda-consultar">
+                <span class="consultar">A consultar, en todos los tamaños</span>
               </td>
-            ))}
+            )}
           </tr>
         ))
       }
@@ -58,19 +64,90 @@ import { formatCLP } from '../utils/money';
 </section>
 
 <style>
-  /* La tabla scrollea horizontal en pantallas chicas, la página nunca */
   .envoltorio {
-    overflow-x: auto;
     border: 1px solid var(--color-borde);
     border-radius: var(--radio-m);
     background: var(--color-superficie);
+    overflow: hidden;
   }
 
   table {
     width: 100%;
-    min-width: 30rem;
     border-collapse: collapse;
     font-size: var(--texto-s);
+  }
+
+  /* — Celular: una tarjeta por servicio, tamaños en 3 columnas — */
+  @media (width < 40rem) {
+    .envoltorio {
+      border: 0;
+      background: transparent;
+      overflow: visible;
+    }
+
+    table,
+    tbody {
+      display: block;
+    }
+
+    /* Los tamaños ya rotulan cada celda: el encabezado se oculta visualmente */
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    tbody {
+      display: grid;
+      gap: var(--espacio-s);
+    }
+
+    tbody tr {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--espacio-xs) var(--espacio-s);
+      padding: var(--espacio-m);
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-m) var(--radio-m) var(--radio-m) calc(var(--radio-m) * 2.2);
+      background: var(--color-superficie);
+      box-shadow: var(--sombra-tarjeta);
+    }
+
+    tbody :is(th, td) {
+      padding: 0;
+      border: 0;
+    }
+
+    tbody th {
+      grid-column: 1 / -1;
+      margin-block-end: var(--espacio-xs);
+      font-size: var(--texto-base);
+    }
+
+    /* Tamaño arriba de cada precio */
+    td[data-tamano]::before {
+      content: attr(data-tamano);
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-primario-fuerte);
+    }
+
+    td[data-tamano] .desde {
+      font-size: 0.75rem;
+    }
+
+    td strong {
+      font-size: var(--texto-base);
+    }
+
+    .celda-consultar {
+      grid-column: 1 / -1;
+    }
   }
 
   th,

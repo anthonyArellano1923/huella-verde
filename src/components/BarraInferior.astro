@@ -14,11 +14,14 @@
  *
  * "Volver" is disabled when there is no previous page on this site (e.g. the
  * visitor opened a product straight from a WhatsApp link).
+ *
+ * The pill only appears once the site header has scrolled out of view: while
+ * the header is visible it already offers the same navigation and the cart.
  */
 import { formatCLP } from '../utils/money';
 ---
 
-<nav class="barra-inferior" aria-label="Navegación rápida">
+<nav class="barra-inferior" aria-label="Navegación rápida" data-oculta inert>
   <button class="barra-inferior__icono" type="button" data-volver aria-label="Volver a la página anterior" disabled>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
   </button>
@@ -83,17 +86,18 @@ import { formatCLP } from '../utils/money';
   <!-- Row template: cloned per item, filled with textContent only. -->
   <template data-plantilla>
     <li class="cajon__item">
+      <div class="cajon__miniatura" data-miniatura aria-hidden="true"></div>
       <div class="cajon__info">
         <a class="cajon__nombre" data-nombre></a>
         <small class="cajon__detalle" data-detalle></small>
-        <span class="cajon__subtotal" data-subtotal></span>
       </div>
       <div class="cajon__acciones">
-        <div class="stepper">
+        <div class="stepper stepper--compacto">
           <button type="button" data-accion="menos">−</button>
           <output data-cantidad></output>
           <button type="button" data-accion="mas">+</button>
         </div>
+        <span class="cajon__subtotal" data-subtotal></span>
         <button class="cajon__eliminar" type="button" data-accion="eliminar">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
@@ -146,6 +150,78 @@ import { formatCLP } from '../utils/money';
   window.addEventListener('pageshow', actualizarVolver);
   botonVolver.addEventListener('click', () => history.back());
 
+  /* — Show the pill only when the site header is out of view — */
+  const cabecera = document.querySelector('body > header');
+  if (cabecera && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entrada]) => {
+      const oculta = entrada.isIntersecting;
+      barra.toggleAttribute('data-oculta', oculta);
+      // inert: a hidden pill must not be reachable with Tab or a screen reader.
+      barra.inert = oculta;
+    }).observe(cabecera);
+  } else {
+    barra.removeAttribute('data-oculta');
+    barra.inert = false;
+  }
+
+  /* — Thumbnails — */
+
+  /** Parsed illustration SVGs by URL, fetched once per page. */
+  const cacheSvg = new Map<string, Promise<SVGElement | null>>();
+
+  /**
+   * Fetches an illustration file and parses it into an SVG element, so the
+   * page CSS (.ilus classes, light/dark palette) applies once inlined.
+   * Only same-origin files are fetched; scripts are stripped defensively.
+   *
+   * @param url - /miniaturas/<id>.svg URL.
+   * @returns The SVG element, or null on any failure.
+   */
+  function cargarSvg(url: string): Promise<SVGElement | null> {
+    if (!cacheSvg.has(url)) {
+      const promesa = (async () => {
+        try {
+          if (new URL(url, location.href).origin !== location.origin) return null;
+          const res = await fetch(url);
+          if (!res.ok) return null;
+          // Parsed as HTML on purpose: the file has no xmlns (it is the same
+          // markup as the inline illustrations), and the HTML parser puts
+          // <svg> in the SVG namespace, which the XML parser would not.
+          const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+          const svg = doc.querySelector('svg');
+          if (!svg) return null;
+          svg.querySelectorAll('script, foreignObject').forEach((n) => n.remove());
+          return document.importNode(svg, true) as unknown as SVGElement;
+        } catch {
+          return null;
+        }
+      })();
+      cacheSvg.set(url, promesa);
+    }
+    return cacheSvg.get(url)!;
+  }
+
+  /**
+   * Fills a thumbnail holder: inline SVG for illustrations, <img> for photos.
+   * Without a URL (carts saved before thumbnails existed) it stays as a
+   * plain tinted square.
+   *
+   * @param caja - Thumbnail holder of one row.
+   * @param url - Item thumbnail URL, if any.
+   */
+  function pintarMiniatura(caja: HTMLElement, url: string | undefined) {
+    if (!url) return;
+    if (url.endsWith('.svg')) {
+      cargarSvg(url).then((svg) => svg && caja.replaceChildren(svg.cloneNode(true)));
+    } else {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = '';
+      img.loading = 'lazy';
+      caja.replaceChildren(img);
+    }
+  }
+
   /* — Current section highlight (body[data-vertical]) — */
   const vertical = document.body.dataset.vertical;
   barra.querySelector(`[data-seccion="${vertical}"]`)?.setAttribute('aria-current', 'page');
@@ -168,6 +244,7 @@ import { formatCLP } from '../utils/money';
       ...items.map((item) => {
         const fila = plantilla.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
         fila.dataset.id = item.id;
+        pintarMiniatura(fila.querySelector<HTMLElement>('[data-miniatura]')!, item.miniatura);
         const enlace = fila.querySelector<HTMLAnchorElement>('[data-nombre]')!;
         enlace.textContent = item.nombre;
         enlace.href = urlProducto(item.id);
@@ -281,6 +358,19 @@ import { formatCLP } from '../utils/money';
       -webkit-backdrop-filter: blur(18px) saturate(1.6);
       backdrop-filter: blur(18px) saturate(1.6);
       box-shadow: 0 6px 24px oklch(0.25 0.03 165 / 0.18);
+      transition: translate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .barra-inferior {
+        transition: opacity 0.2s ease;
+      }
+    }
+
+    /* Hidden while the header is visible: slides down and fades out. */
+    .barra-inferior[data-oculta] {
+      translate: -50% calc(100% + 1.5rem);
+      opacity: 0;
     }
 
     /* Room for the pill so it never covers the end of the page. */
@@ -355,13 +445,15 @@ import { formatCLP } from '../utils/money';
   }
 
   /* — Drawer — */
+  /* Floating card on the right: rounded on every corner and only as tall as
+     its content, so there is free backdrop to tap and close. */
   .cajon {
-    inset-inline: auto 0;
-    inset-block: 0;
-    inline-size: min(26rem, 92vw);
+    inset-inline: auto 0.5rem;
+    inset-block: 0.5rem auto;
+    inline-size: min(26rem, calc(100vw - 1rem));
     max-inline-size: none;
-    block-size: 100dvh;
-    max-block-size: none;
+    block-size: auto;
+    max-block-size: calc(100dvh - 1rem);
     margin: 0;
     padding: 0;
     border: 0;
@@ -379,10 +471,11 @@ import { formatCLP } from '../utils/money';
   .cajon__panel {
     display: flex;
     flex-direction: column;
-    block-size: 100%;
+    max-block-size: calc(100dvh - 1rem);
+    overflow: hidden;
     background: var(--color-superficie);
-    border-start-start-radius: calc(var(--radio-m) * 1.6);
-    border-end-start-radius: calc(var(--radio-m) * 1.6);
+    border: 1px solid var(--color-borde);
+    border-radius: calc(var(--radio-m) * 1.6);
     box-shadow: -8px 0 32px oklch(0.2 0.03 165 / 0.2);
     transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -393,7 +486,7 @@ import { formatCLP } from '../utils/money';
     transform: translateX(0);
 
     @starting-style {
-      transform: translateX(100%);
+      transform: translateX(calc(100% + 1rem));
     }
   }
 
@@ -444,7 +537,8 @@ import { formatCLP } from '../utils/money';
   }
 
   .cajon__lista {
-    flex: 1;
+    flex: 0 1 auto;
+    min-block-size: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     margin: 0;
@@ -452,18 +546,37 @@ import { formatCLP } from '../utils/money';
     list-style: none;
   }
 
+  /* Row: thumbnail + name on top, then stepper · subtotal · delete on one line. */
   .cajon__lista :global(.cajon__item) {
     display: grid;
-    gap: var(--espacio-s);
+    grid-template-columns: 3rem 1fr;
+    align-items: center;
+    gap: var(--espacio-s) var(--espacio-m);
     padding-block: var(--espacio-m);
     border-block-end: 1px solid var(--color-borde);
   }
 
+  .cajon__lista :global(.cajon__item:last-child) {
+    border-block-end: 0;
+  }
+
+  .cajon__lista :global(.cajon__miniatura) {
+    inline-size: 3rem;
+    block-size: 3rem;
+    overflow: hidden;
+    border-radius: var(--radio-s);
+    background: var(--ilus-fondo);
+  }
+
+  .cajon__lista :global(.cajon__miniatura > *) {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
   .cajon__lista :global(.cajon__info) {
     display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: baseline;
-    column-gap: var(--espacio-s);
+    line-height: 1.3;
   }
 
   .cajon__lista :global(.cajon__nombre) {
@@ -471,21 +584,20 @@ import { formatCLP } from '../utils/money';
   }
 
   .cajon__lista :global(.cajon__detalle) {
-    grid-column: 1;
     color: var(--color-texto-suave);
   }
 
-  .cajon__lista :global(.cajon__subtotal) {
-    grid-column: 2;
-    grid-row: 1;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
-
   .cajon__lista :global(.cajon__acciones) {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: var(--espacio-s);
+  }
+
+  .cajon__lista :global(.cajon__subtotal) {
+    margin-inline-start: auto;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
   .cajon__vacio {

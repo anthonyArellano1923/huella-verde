@@ -10,6 +10,7 @@ import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Ilustracion from './ilustraciones/Ilustracion.astro';
 import AgregarRapido from './AgregarRapido.astro';
+import { miniaturaProducto } from '../utils/miniatura';
 import { formatCLP } from '../utils/money';
 import { ETIQUETA_CATEGORIA, ETIQUETA_DIFICULTAD } from './producto-etiquetas';
 
@@ -27,6 +28,7 @@ const Titulo = `h${nivel}` as 'h2' | 'h3';
 const { nombre, descripcion, precio, foto, fotoAlt, stock, ilustracion } = producto.data;
 const agotado = stock === 0;
 const href = `/${producto.collection}/${producto.id}/`;
+const miniatura = await miniaturaProducto(foto, ilustracion);
 
 /** Small chips under the description: care level for plants, category for accessories. */
 const chips: string[] =
@@ -64,7 +66,7 @@ const chips: string[] =
     </div>
   </a>
   {/* Outside the link: a button cannot live inside an <a>. */}
-  <AgregarRapido id={`${producto.collection}/${producto.id}`} nombre={nombre} precio={precio} stock={stock} />
+  <AgregarRapido id={`${producto.collection}/${producto.id}`} nombre={nombre} precio={precio} stock={stock} miniatura={miniatura} />
 </article>
 
 <style>

@@ -16,9 +16,11 @@ interface Props {
   nombre: string;
   precio: number;
   stock: number;
+  /** Thumbnail URL for the cart drawer (see utils/miniatura.ts). */
+  miniatura: string;
 }
 
-const { id, nombre, precio, stock } = Astro.props;
+const { id, nombre, precio, stock, miniatura } = Astro.props;
 const maximo = Math.min(stock, MAX_POR_PRODUCTO);
 ---
 
@@ -29,6 +31,7 @@ const maximo = Math.min(stock, MAX_POR_PRODUCTO);
   data-nombre={nombre}
   data-precio={precio}
   data-max={maximo}
+  data-miniatura={miniatura}
 >
   {
     maximo === 0 ? (
@@ -92,7 +95,7 @@ const maximo = Math.min(stock, MAX_POR_PRODUCTO);
 
     switch (objetivo.dataset.accion) {
       case 'agregar':
-        agregarAlCarrito({ id, nombre, precio: Number(caja.dataset.precio) });
+        agregarAlCarrito({ id, nombre, precio: Number(caja.dataset.precio), miniatura: caja.dataset.miniatura });
         // Keep keyboard focus on the control that replaced the button.
         caja.querySelector<HTMLButtonElement>('[data-accion="mas"]')?.focus();
         break;

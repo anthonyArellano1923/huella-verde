@@ -19,6 +19,8 @@ interface Props {
   talla?: string;
   precio: number;
   stock: number;
+  /** Thumbnail URL for the cart drawer (see utils/miniatura.ts). */
+  miniatura?: string;
 }
 
 /**
@@ -26,7 +28,7 @@ interface Props {
  *
  * @param props - Product data (see the contract above).
  */
-export default function BotonAgregarCarrito({ slug, coleccion = 'prendas', nombre, talla, precio, stock }: Props) {
+export default function BotonAgregarCarrito({ slug, coleccion = 'prendas', nombre, talla, precio, stock, miniatura }: Props) {
   const id = slug.includes('/') ? slug : `${coleccion}/${slug}`;
   const detalle = talla && talla !== 'única' ? `talla ${talla}` : undefined;
   const items = useStore($carrito);
@@ -39,7 +41,7 @@ export default function BotonAgregarCarrito({ slug, coleccion = 'prendas', nombr
         className="boton"
         type="button"
         disabled={sinStock}
-        onClick={() => agregarAlCarrito({ id, nombre, detalle, precio })}
+        onClick={() => agregarAlCarrito({ id, nombre, detalle, precio, miniatura })}
       >
         {sinStock ? 'No quedan más unidades' : 'Agregar al carrito 🛒'}
       </button>
