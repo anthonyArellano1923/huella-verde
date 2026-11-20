@@ -277,6 +277,13 @@ const esActual = (href: string) => {
     line-height: 1.4;
   }
 
+  /* On phones the cart lives in the bottom bar (BarraInferior.astro). */
+  @media (width < 48rem) {
+    .carrito-badge {
+      display: none;
+    }
+  }
+
   /* The display rule above would otherwise override the hidden attribute. */
   .carrito-badge__numero[hidden] {
     display: none;

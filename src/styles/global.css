@@ -64,11 +64,34 @@ p {
   text-wrap: pretty;
 }
 
+/* Links: no browser-default underline. Color + semibold weight already set
+   them apart from body text (WCAG technique G182); hover/focus draws a thin
+   underline as feedback. */
 a {
   color: var(--color-primario);
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     color: var(--color-primario-fuerte);
+    text-decoration-line: underline;
+  }
+}
+
+/* Links in the middle of a sentence keep a faint underline so they can be
+   found without relying on color (WCAG 1.4.1). Standalone links (nav, footer,
+   breadcrumbs, "Ver más →") opt out by not living inside running text, or
+   with .enlace-suelto. */
+:where(p, dd) a:not(.boton, .enlace-suelto) {
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklch, currentColor 35%, transparent);
+
+  &:hover,
+  &:focus-visible {
+    text-decoration-color: currentColor;
   }
 }
 
@@ -146,6 +169,55 @@ button {
       background: oklch(from var(--color-whatsapp) calc(l - 0.08) c h);
       color: var(--color-texto-sobre-color);
     }
+  }
+}
+
+/* Quantity stepper (− qty +): product cards and the cart drawer.
+   Buttons are 44 px touch targets. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-xs);
+  padding: 2px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pill);
+  background: var(--color-primario-suave);
+
+  &[hidden] {
+    display: none;
+  }
+
+  & button {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-superficie);
+    color: var(--color-primario-fuerte);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: var(--color-primario);
+      color: var(--color-texto-invertido);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  & output {
+    min-inline-size: 2ch;
+    text-align: center;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 }
 

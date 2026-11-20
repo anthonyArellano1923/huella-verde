@@ -1,0 +1,137 @@
+---
+/**
+ * Quick add-to-cart control for product cards (/plantas, /accesorios).
+ *
+ * Shows "Agregar" while the product is not in the cart; once added, it turns
+ * into a − qty + stepper (going below 1 removes the line). No React: a small
+ * script shared by every card on the page subscribes to the same nanostores
+ * cart atom as the header, the bottom bar and /carrito, so they all stay in
+ * sync. The quantity is capped by the stock and the per-order limit.
+ */
+import { MAX_POR_PRODUCTO } from '../stores/carrito';
+
+interface Props {
+  /** "<coleccion>/<slug>", e.g. "plantas/cinta". */
+  id: string;
+  nombre: string;
+  precio: number;
+  stock: number;
+}
+
+const { id, nombre, precio, stock } = Astro.props;
+const maximo = Math.min(stock, MAX_POR_PRODUCTO);
+---
+
+<div
+  class="agregar-rapido"
+  data-agregar-rapido
+  data-id={id}
+  data-nombre={nombre}
+  data-precio={precio}
+  data-max={maximo}
+>
+  {
+    maximo === 0 ? (
+      <button class="boton agregar-rapido__boton" type="button" disabled>
+        Agotado
+      </button>
+    ) : (
+      <>
+        <button
+          class="boton agregar-rapido__boton"
+          type="button"
+          data-accion="agregar"
+          aria-label={`Agregar ${nombre} al carrito`}
+        >
+          Agregar al carrito
+        </button>
+        <div class="stepper" data-stepper hidden>
+          <button type="button" data-accion="menos" aria-label={`Quitar una unidad de ${nombre}`}>
+            −
+          </button>
+          <output data-cantidad aria-live="polite">1</output>
+          <button type="button" data-accion="mas" aria-label={`Agregar una unidad de ${nombre}`}>
+            +
+          </button>
+        </div>
+      </>
+    )
+  }
+</div>
+
+<script>
+  import { $carrito, agregarAlCarrito, cambiarCantidad } from '../stores/carrito';
+
+  /**
+   * Repaints every quick-add control on the page from the cart state.
+   *
+   * @param items - Current cart items.
+   */
+  function pintar(items: { id: string; qty: number }[]) {
+    document.querySelectorAll<HTMLElement>('[data-agregar-rapido]').forEach((caja) => {
+      const boton = caja.querySelector<HTMLButtonElement>('[data-accion="agregar"]');
+      const stepper = caja.querySelector<HTMLElement>('[data-stepper]');
+      if (!boton || !stepper) return; // sold out: nothing to paint
+      const qty = items.find((i) => i.id === caja.dataset.id)?.qty ?? 0;
+      const max = Number(caja.dataset.max);
+      boton.hidden = qty > 0;
+      stepper.hidden = qty === 0;
+      stepper.querySelector('[data-cantidad]')!.textContent = String(qty);
+      stepper.querySelector<HTMLButtonElement>('[data-accion="mas"]')!.disabled = qty >= max;
+    });
+  }
+
+  // One delegated listener for all cards (also covers cards added later).
+  document.addEventListener('click', (evento) => {
+    const objetivo = (evento.target as HTMLElement).closest<HTMLButtonElement>('[data-accion]');
+    const caja = objetivo?.closest<HTMLElement>('[data-agregar-rapido]');
+    if (!objetivo || !caja) return;
+    const { id = '', nombre = '' } = caja.dataset;
+    const max = Number(caja.dataset.max);
+    const qty = $carrito.get().find((i) => i.id === id)?.qty ?? 0;
+
+    switch (objetivo.dataset.accion) {
+      case 'agregar':
+        agregarAlCarrito({ id, nombre, precio: Number(caja.dataset.precio) });
+        // Keep keyboard focus on the control that replaced the button.
+        caja.querySelector<HTMLButtonElement>('[data-accion="mas"]')?.focus();
+        break;
+      case 'mas':
+        if (qty < max) cambiarCantidad(id, qty + 1);
+        break;
+      case 'menos':
+        cambiarCantidad(id, qty - 1);
+        if (qty - 1 === 0) caja.querySelector<HTMLButtonElement>('[data-accion="agregar"]')?.focus();
+        break;
+    }
+  });
+
+  // subscribe() runs immediately with the stored value and on every change.
+  $carrito.subscribe(pintar);
+</script>
+
+<style>
+  .agregar-rapido {
+    padding: 0 var(--espacio-m) var(--espacio-m);
+
+    & > * {
+      inline-size: 100%;
+    }
+  }
+
+  .agregar-rapido__boton {
+    min-block-size: 44px;
+    padding-block: 0.5em;
+
+    &:disabled {
+      background: var(--color-borde);
+      color: var(--color-texto-suave);
+      cursor: not-allowed;
+    }
+  }
+
+  /* hidden must win over the .boton / .stepper display rules */
+  [hidden] {
+    display: none !important;
+  }
+</style>

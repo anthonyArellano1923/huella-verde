@@ -12,6 +12,7 @@
  * real lo recalcula el servidor (nunca se confía en montos del navegador).
  */
 import { persistentAtom } from '@nanostores/persistent';
+import { conBase } from '../utils/ruta';
 
 export interface ItemCarrito {
   /** "<coleccion>/<slug>", e.g. "plantas/cinta". */
@@ -74,7 +75,7 @@ export const $carrito = persistentAtom<ItemCarrito[]>('mm-carrito', [], {
  */
 export function urlProducto(id: string): string {
   const [coleccion, slug] = id.split('/');
-  return coleccion === 'prendas' ? `/ropita/${slug}/` : `/${coleccion}/${slug}/`;
+  return conBase(coleccion === 'prendas' ? `/ropita/${slug}/` : `/${coleccion}/${slug}/`);
 }
 
 /**

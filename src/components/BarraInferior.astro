@@ -1,0 +1,534 @@
+---
+/**
+ * Floating bottom navigation for phones (< 48rem), close to the thumb.
+ *
+ * A translucent pill (frosted glass, like Safari's address bar on iOS) with
+ * four icons: back, grooming (services and booking), shop and cart. The cart
+ * opens a drawer from the right with the items, − / + steppers, a delete
+ * button per line, the total and "Continuar al pago" (→ /carrito).
+ *
+ * The drawer is a native <dialog> opened with showModal(): focus trapping,
+ * Escape to close and the dimmed backdrop come for free. Its content is
+ * painted from the same nanostores cart atom used everywhere else, built with
+ * DOM nodes (never innerHTML) because names come from localStorage.
+ *
+ * "Volver" is disabled when there is no previous page on this site (e.g. the
+ * visitor opened a product straight from a WhatsApp link).
+ */
+import { formatCLP } from '../utils/money';
+---
+
+<nav class="barra-inferior" aria-label="Navegación rápida">
+  <button class="barra-inferior__icono" type="button" data-volver aria-label="Volver a la página anterior" disabled>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+  </button>
+  <a class="barra-inferior__icono" href="/servicios/" data-seccion="peluqueria" aria-label="Peluquería: servicios y reserva">
+    <svg viewBox="0 0 24 24" aria-hidden="true" class="relleno">
+      <ellipse cx="12" cy="15.4" rx="4.4" ry="3.7" />
+      <ellipse cx="6.3" cy="10.8" rx="1.8" ry="2.4" transform="rotate(-18 6.3 10.8)" />
+      <ellipse cx="9.8" cy="8" rx="1.8" ry="2.5" transform="rotate(-6 9.8 8)" />
+      <ellipse cx="14.2" cy="8" rx="1.8" ry="2.5" transform="rotate(6 14.2 8)" />
+      <ellipse cx="17.7" cy="10.8" rx="1.8" ry="2.4" transform="rotate(18 17.7 10.8)" />
+    </svg>
+  </a>
+  <a class="barra-inferior__icono" href="/plantas/" data-seccion="tienda" aria-label="Tienda de plantas y accesorios">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 14V9" />
+      <path d="M12 10c0-3 2-5 6-5 0 3.5-2 5.5-6 5z" />
+      <path d="M12 12c0-2.5-1.7-4.3-5-4.3 0 3 1.7 4.8 5 4.3z" />
+      <path d="M6.5 14h11l-1.3 6.2a1 1 0 0 1-1 .8H8.8a1 1 0 0 1-1-.8z" />
+    </svg>
+  </a>
+  <button
+    class="barra-inferior__icono barra-inferior__carrito"
+    type="button"
+    data-abrir-carrito
+    aria-haspopup="dialog"
+    aria-controls="cajon-carrito"
+    aria-label="Carrito, 0 productos"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 4h2l2.2 10.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6" />
+      <circle cx="9.5" cy="19.5" r="1.3" />
+      <circle cx="17" cy="19.5" r="1.3" />
+    </svg>
+    <span class="barra-inferior__numero" data-numero hidden></span>
+  </button>
+</nav>
+
+<dialog class="cajon" id="cajon-carrito" aria-labelledby="cajon-titulo">
+  <div class="cajon__panel" data-panel>
+    <header class="cajon__cabecera">
+      <h2 id="cajon-titulo">Tu carrito</h2>
+      <button class="cajon__cerrar" type="button" data-cerrar aria-label="Cerrar carrito">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </header>
+
+    <ul class="cajon__lista" data-lista></ul>
+
+    <div class="cajon__vacio" data-vacio hidden>
+      <p>Tu carrito está vacío.</p>
+      <a class="boton boton--secundario" href="/plantas/">Ver plantas</a>
+      <a class="boton boton--secundario" href="/accesorios/">Ver accesorios</a>
+    </div>
+
+    <footer class="cajon__pie" data-pie hidden>
+      <p class="cajon__total">Total <strong data-total>{formatCLP(0)}</strong></p>
+      <a class="boton" href="/carrito/" data-continuar>Continuar al pago</a>
+      <button class="cajon__seguir" type="button" data-cerrar>Seguir comprando</button>
+    </footer>
+  </div>
+
+  <!-- Row template: cloned per item, filled with textContent only. -->
+  <template data-plantilla>
+    <li class="cajon__item">
+      <div class="cajon__info">
+        <a class="cajon__nombre" data-nombre></a>
+        <small class="cajon__detalle" data-detalle></small>
+        <span class="cajon__subtotal" data-subtotal></span>
+      </div>
+      <div class="cajon__acciones">
+        <div class="stepper">
+          <button type="button" data-accion="menos">−</button>
+          <output data-cantidad></output>
+          <button type="button" data-accion="mas">+</button>
+        </div>
+        <button class="cajon__eliminar" type="button" data-accion="eliminar">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+          </svg>
+        </button>
+      </div>
+    </li>
+  </template>
+</dialog>
+
+<script>
+  import {
+    $carrito,
+    cambiarCantidad,
+    MAX_POR_PRODUCTO,
+    totalReferencia,
+    urlProducto,
+    type ItemCarrito,
+  } from '../stores/carrito';
+  import { formatCLP } from '../utils/money';
+
+  const barra = document.querySelector<HTMLElement>('.barra-inferior')!;
+  const cajon = document.querySelector<HTMLDialogElement>('#cajon-carrito')!;
+  const panel = cajon.querySelector<HTMLElement>('[data-panel]')!;
+  const lista = cajon.querySelector<HTMLUListElement>('[data-lista]')!;
+  const plantilla = cajon.querySelector<HTMLTemplateElement>('[data-plantilla]')!;
+  const botonVolver = barra.querySelector<HTMLButtonElement>('[data-volver]')!;
+  const botonCarrito = barra.querySelector<HTMLButtonElement>('[data-abrir-carrito]')!;
+
+  /* — Back button — */
+
+  /**
+   * Whether there is a previous page of this same site to go back to.
+   * Uses the Navigation API where available (it only lists same-origin
+   * entries); otherwise falls back to a same-origin referrer.
+   */
+  function puedeVolver(): boolean {
+    const nav = (window as { navigation?: { canGoBack?: boolean } }).navigation;
+    if (typeof nav?.canGoBack === 'boolean') return nav.canGoBack;
+    try {
+      return history.length > 1 && new URL(document.referrer).origin === location.origin;
+    } catch {
+      return false; // empty referrer: opened directly or from another app
+    }
+  }
+
+  const actualizarVolver = () => (botonVolver.disabled = !puedeVolver());
+  actualizarVolver();
+  // Pages restored from the back/forward cache keep their old state.
+  window.addEventListener('pageshow', actualizarVolver);
+  botonVolver.addEventListener('click', () => history.back());
+
+  /* — Current section highlight (body[data-vertical]) — */
+  const vertical = document.body.dataset.vertical;
+  barra.querySelector(`[data-seccion="${vertical}"]`)?.setAttribute('aria-current', 'page');
+
+  /* — Drawer painting — */
+
+  /**
+   * Rebuilds the drawer list, total and empty state, and the cart badge.
+   *
+   * @param items - Current cart items.
+   */
+  function pintar(items: ItemCarrito[]) {
+    const unidades = items.reduce((suma, i) => suma + i.qty, 0);
+    const numero = botonCarrito.querySelector<HTMLElement>('[data-numero]')!;
+    numero.textContent = String(unidades);
+    numero.hidden = unidades === 0;
+    botonCarrito.setAttribute('aria-label', `Carrito, ${unidades} productos`);
+
+    lista.replaceChildren(
+      ...items.map((item) => {
+        const fila = plantilla.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
+        fila.dataset.id = item.id;
+        const enlace = fila.querySelector<HTMLAnchorElement>('[data-nombre]')!;
+        enlace.textContent = item.nombre;
+        enlace.href = urlProducto(item.id);
+        const detalle = fila.querySelector<HTMLElement>('[data-detalle]')!;
+        if (item.detalle) detalle.textContent = item.detalle;
+        else detalle.remove();
+        fila.querySelector('[data-subtotal]')!.textContent = formatCLP(item.precio * item.qty);
+        fila.querySelector('[data-cantidad]')!.textContent = String(item.qty);
+        const menos = fila.querySelector<HTMLButtonElement>('[data-accion="menos"]')!;
+        const mas = fila.querySelector<HTMLButtonElement>('[data-accion="mas"]')!;
+        const eliminar = fila.querySelector<HTMLButtonElement>('[data-accion="eliminar"]')!;
+        menos.setAttribute('aria-label', `Quitar una unidad de ${item.nombre}`);
+        mas.setAttribute('aria-label', `Agregar una unidad de ${item.nombre}`);
+        eliminar.setAttribute('aria-label', `Eliminar ${item.nombre} del carrito`);
+        // One unit left: "−" would delete the line; the trash button does that.
+        menos.disabled = item.qty <= 1;
+        mas.disabled = item.qty >= MAX_POR_PRODUCTO;
+        return fila;
+      }),
+    );
+
+    cajon.querySelector('[data-total]')!.textContent = formatCLP(totalReferencia(items));
+    cajon.querySelector<HTMLElement>('[data-vacio]')!.hidden = items.length > 0;
+    cajon.querySelector<HTMLElement>('[data-pie]')!.hidden = items.length === 0;
+  }
+
+  // Steppers and delete buttons: one delegated listener for every row.
+  lista.addEventListener('click', (evento) => {
+    const boton = (evento.target as HTMLElement).closest<HTMLButtonElement>('[data-accion]');
+    const id = boton?.closest<HTMLElement>('[data-id]')?.dataset.id;
+    if (!boton || !id) return;
+    const qty = $carrito.get().find((i) => i.id === id)?.qty ?? 0;
+    if (boton.dataset.accion === 'mas') cambiarCantidad(id, qty + 1);
+    if (boton.dataset.accion === 'menos') cambiarCantidad(id, qty - 1);
+    if (boton.dataset.accion === 'eliminar') {
+      cambiarCantidad(id, 0);
+      // The row (and its focused button) is gone: keep focus inside the drawer.
+      cajon.querySelector<HTMLElement>('[data-cerrar]')?.focus();
+      return;
+    }
+    // The list was rebuilt: put focus back on the same button of the same row.
+    lista
+      .querySelector<HTMLButtonElement>(`[data-id="${CSS.escape(id)}"] [data-accion="${boton.dataset.accion}"]`)
+      ?.focus();
+  });
+
+  $carrito.subscribe(pintar);
+
+  /* — Open / close — */
+
+  botonCarrito.addEventListener('click', () => cajon.showModal());
+  cajon.querySelectorAll('[data-cerrar]').forEach((b) => b.addEventListener('click', () => cajon.close()));
+
+  // Tap on the dimmed backdrop (the click lands on the <dialog> itself).
+  cajon.addEventListener('click', (evento) => {
+    if (evento.target === cajon) cajon.close();
+  });
+
+  // Already on /carrito: "Continuar al pago" just reveals the page below.
+  cajon.querySelector('[data-continuar]')!.addEventListener('click', (evento) => {
+    if (location.pathname.replace(/\/$/, '').endsWith('/carrito')) {
+      evento.preventDefault();
+      cajon.close();
+    }
+  });
+
+  /* — Swipe right to close — */
+  let inicioX: number | null = null;
+  let desplazamiento = 0;
+
+  panel.addEventListener('touchstart', (e) => {
+    inicioX = e.touches[0].clientX;
+    desplazamiento = 0;
+  }, { passive: true });
+
+  panel.addEventListener('touchmove', (e) => {
+    if (inicioX === null) return;
+    desplazamiento = Math.max(0, e.touches[0].clientX - inicioX);
+    panel.style.transition = 'none';
+    panel.style.transform = `translateX(${desplazamiento}px)`;
+  }, { passive: true });
+
+  panel.addEventListener('touchend', () => {
+    panel.style.transition = '';
+    panel.style.transform = '';
+    if (desplazamiento > 80) cajon.close();
+    inicioX = null;
+  });
+</script>
+
+<style>
+  /* — Floating pill — (phones only; desktop keeps the header cart) */
+  .barra-inferior {
+    display: none;
+  }
+
+  @media (width < 48rem) {
+    .barra-inferior {
+      position: fixed;
+      inset-block-end: max(0.75rem, env(safe-area-inset-bottom));
+      inset-inline-start: 50%;
+      z-index: 50;
+      translate: -50% 0;
+      display: flex;
+      gap: 0.35rem;
+      padding: 0.35rem;
+      border: 1px solid color-mix(in oklch, var(--color-borde) 70%, transparent);
+      border-radius: var(--radio-pill);
+      /* Frosted glass: content stays faintly visible behind the pill. */
+      background: color-mix(in oklch, var(--color-superficie) 62%, transparent);
+      -webkit-backdrop-filter: blur(18px) saturate(1.6);
+      backdrop-filter: blur(18px) saturate(1.6);
+      box-shadow: 0 6px 24px oklch(0.25 0.03 165 / 0.18);
+    }
+
+    /* Room for the pill so it never covers the end of the page. */
+    :global(body) {
+      padding-block-end: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+  }
+
+  .barra-inferior__icono {
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-texto);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    & svg {
+      inline-size: 1.5rem;
+      block-size: 1.5rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    & svg.relleno {
+      fill: currentColor;
+      stroke: none;
+    }
+
+    &:hover:not(:disabled) {
+      background: color-mix(in oklch, var(--color-primario-suave) 80%, transparent);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    &[aria-current='page'] {
+      background: var(--color-primario);
+      color: var(--color-texto-invertido);
+    }
+  }
+
+  .barra-inferior__numero {
+    position: absolute;
+    inset-block-start: 0.15rem;
+    inset-inline-end: 0.1rem;
+    min-inline-size: 1.25rem;
+    padding-inline: 0.3em;
+    border-radius: var(--radio-pill);
+    /* Fixed floral red in both themes (acento-fuerte turns pale in dark
+       mode), so the white number keeps AA contrast. */
+    background: oklch(0.5 0.15 15);
+    color: var(--color-texto-sobre-color);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+    text-align: center;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* — Drawer — */
+  .cajon {
+    inset-inline: auto 0;
+    inset-block: 0;
+    inline-size: min(26rem, 92vw);
+    max-inline-size: none;
+    block-size: 100dvh;
+    max-block-size: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-texto);
+    overflow: visible;
+
+    &::backdrop {
+      background: oklch(0.2 0.02 165 / 0.45);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+    }
+  }
+
+  .cajon__panel {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+    background: var(--color-superficie);
+    border-start-start-radius: calc(var(--radio-m) * 1.6);
+    border-end-start-radius: calc(var(--radio-m) * 1.6);
+    box-shadow: -8px 0 32px oklch(0.2 0.03 165 / 0.2);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Slide in from the right. @starting-style animates the first frame after
+     showModal(); browsers without it simply show the drawer. */
+  .cajon[open] .cajon__panel {
+    transform: translateX(0);
+
+    @starting-style {
+      transform: translateX(100%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cajon__panel {
+      transition: none;
+    }
+  }
+
+  .cajon__cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--espacio-m) var(--espacio-m) var(--espacio-s);
+    border-block-end: 1px solid var(--color-borde);
+
+    & h2 {
+      font-size: var(--texto-l);
+    }
+  }
+
+  .cajon__cerrar,
+  .cajon__eliminar {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-texto-suave);
+    cursor: pointer;
+
+    & svg {
+      inline-size: 1.3rem;
+      block-size: 1.3rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    &:hover {
+      background: var(--color-acento-suave);
+      color: var(--color-acento-fuerte);
+    }
+  }
+
+  .cajon__lista {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: 0 var(--espacio-m);
+    list-style: none;
+  }
+
+  .cajon__lista :global(.cajon__item) {
+    display: grid;
+    gap: var(--espacio-s);
+    padding-block: var(--espacio-m);
+    border-block-end: 1px solid var(--color-borde);
+  }
+
+  .cajon__lista :global(.cajon__info) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    column-gap: var(--espacio-s);
+  }
+
+  .cajon__lista :global(.cajon__nombre) {
+    color: var(--color-texto);
+  }
+
+  .cajon__lista :global(.cajon__detalle) {
+    grid-column: 1;
+    color: var(--color-texto-suave);
+  }
+
+  .cajon__lista :global(.cajon__subtotal) {
+    grid-column: 2;
+    grid-row: 1;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cajon__lista :global(.cajon__acciones) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cajon__vacio {
+    display: grid;
+    gap: var(--espacio-s);
+    padding: var(--espacio-l) var(--espacio-m);
+    text-align: center;
+    color: var(--color-texto-suave);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .cajon__pie {
+    display: grid;
+    gap: var(--espacio-s);
+    padding: var(--espacio-m);
+    padding-block-end: max(var(--espacio-m), env(safe-area-inset-bottom));
+    border-block-start: 1px solid var(--color-borde);
+    background: var(--color-primario-suave);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .cajon__total {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--texto-l);
+
+    & strong {
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .cajon__seguir {
+    min-block-size: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--color-primario-fuerte);
+    font-weight: 600;
+    cursor: pointer;
+  }
+</style>

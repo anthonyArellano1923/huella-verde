@@ -9,6 +9,7 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Ilustracion from './ilustraciones/Ilustracion.astro';
+import AgregarRapido from './AgregarRapido.astro';
 import { formatCLP } from '../utils/money';
 import { ETIQUETA_CATEGORIA, ETIQUETA_DIFICULTAD } from './producto-etiquetas';
 
@@ -62,10 +63,14 @@ const chips: string[] =
       <p class="precio">{formatCLP(precio)}</p>
     </div>
   </a>
+  {/* Outside the link: a button cannot live inside an <a>. */}
+  <AgregarRapido id={`${producto.collection}/${producto.id}`} nombre={nombre} precio={precio} stock={stock} />
 </article>
 
 <style>
   .tarjeta {
+    display: flex;
+    flex-direction: column;
     background: var(--color-superficie);
     border: 1px solid var(--color-borde);
     border-radius: var(--radio-m) var(--radio-m) var(--radio-m) calc(var(--radio-m) * 2.2);
@@ -80,8 +85,9 @@ const chips: string[] =
 
     & > a {
       display: flex;
+      flex: 1;
       flex-direction: column;
-      height: 100%;
+      font-weight: inherit;
       color: inherit;
       text-decoration: none;
 

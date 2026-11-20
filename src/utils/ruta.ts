@@ -16,3 +16,16 @@ export function rutaSinBase(pathname: string): string {
   }
   return pathname;
 }
+
+/**
+ * Prefixes a root-relative path with Astro's `base`, for URLs built at
+ * runtime in the browser (e.g. from cart items), which the GitHub Pages
+ * post-build step cannot rewrite.
+ *
+ * @param ruta - Path from the site root, e.g. "/plantas/cinta/".
+ * @returns "/plantas/cinta/" on the real domain, "/huella-verde/plantas/cinta/" in the preview.
+ */
+export function conBase(ruta: string): string {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  return `${base}${ruta}`;
+}
